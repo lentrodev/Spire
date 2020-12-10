@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>netstandard2.1</TargetFramework>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\..\src\core\commands\parsing\Spire.Core.Commands.Parsing\Spire.Core.Commands.Parsing.csproj"/>
+        <ProjectReference Include="..\..\src\core\markups\Spire.Core.Markups\Spire.Core.Markups.csproj"/>
+        <ProjectReference Include="..\..\src\core\commands\Spire.Core.Commands\Spire.Core.Commands.csproj"/>
+        <ProjectReference Include="..\..\src\core\sessions\Spire.Core.Sessions\Spire.Core.Sessions.csproj"/>
+        <ProjectReference Include="..\..\src\core\Spire.Core.Abstractions\Spire.Core.Abstractions.csproj"/>
+        <ProjectReference Include="..\..\src\core\Spire.Core\Spire.Core.csproj"/>
+        <ProjectReference Include="..\..\src\Spire\Spire.csproj"/>
+    </ItemGroup>
+
+</Project>
