@@ -76,11 +76,21 @@ namespace Spire.Core.Sessions
 
             while (sessionUpdateEntityRequestState.CurrentAttempt != sessionRequestOptions.Attempts)
             {
-                sessionRequestOptions.Action(sessionUpdateEntityRequestState);
+                sessionRequestOptions.Action?.Invoke(sessionUpdateEntityRequestState);
 
-                while (await _updateEntityChannelReader.WaitToReadAsync(cancellationToken))
+                while (!cancellationToken.IsCancellationRequested)
+                {
+                    await _updateEntityChannelReader.WaitToReadAsync(cancellationToken).ConfigureAwait(false);
+
                     if (_updateEntityChannelReader.TryRead(out lastUpdateEntity))
                         break;
+                }
+
+                if (cancellationToken.IsCancellationRequested)
+                {
+                    IsUpdateEntityRequested = false;
+                    break;
+                }
 
                 sessionUpdateEntityRequestState.Next(lastUpdateEntity);
 

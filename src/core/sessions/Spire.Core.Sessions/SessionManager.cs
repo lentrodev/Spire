@@ -45,15 +45,14 @@ namespace Spire.Core.Sessions
         {
             if (_sessions.TryGetValue(session.Owner.Id, out IList<ISession> existingSessions))
             {
-                foreach (ISession existingSession in existingSessions)
+                foreach (ISession existingSession in existingSessions.ToList())
                 {
-                    if (existingSession is ISession<TEntity> typedSession &&
-                        typedSession.Owner.Id == session.Owner.Id && typedSession.EntityType == session.EntityType)
+                    if (!(existingSession is ISession<TEntity> typedSession && typedSession.EntityType == session.EntityType))
                     {
-                        existingSessions.RemoveAt(existingSessions.IndexOf(existingSession));
+                        existingSessions.Add(session);
                     }
-
-                    existingSessions.Add(session);
+                    
+                    break;
                 }
             }
             else
@@ -87,8 +86,8 @@ namespace Spire.Core.Sessions
             {
                 foreach (ISession existingSession in existingSessions)
                 {
-                    if (existingSession is ISession<TEntity> typedSession &&
-                        typedSession.Owner.Id == owner.Id && typedSession.EntityType == entityType)
+                    if (existingSession is ISession<TEntity> typedSession 
+                        && typedSession.EntityType == entityType)
                     {
                         return true;
                     }
@@ -115,8 +114,8 @@ namespace Spire.Core.Sessions
             {
                 foreach (ISession existingSession in existingSessions)
                 {
-                    if (existingSession is ISession<TEntity> typedSession &&
-                        typedSession.Owner.Id == owner.Id && typedSession.EntityType == entityType)
+                    if (existingSession is ISession<TEntity> typedSession 
+                        && typedSession.EntityType == entityType)
                     {
                         return typedSession;
                     }
