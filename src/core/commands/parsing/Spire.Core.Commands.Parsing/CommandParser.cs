@@ -134,6 +134,8 @@ namespace Spire.Core.Commands.Parsing
 
             Dictionary<string, string> unparsedVariables = new Dictionary<string, string>();
 
+            bool success = true;
+            
             foreach (var variable in Variables)
             {
                 string variableValue = smatch.Groups?[variable.Name]?.Value ?? "";
@@ -142,16 +144,22 @@ namespace Spire.Core.Commands.Parsing
                 {
                     if (OptionsHandlers.ContainsKey(option.Key))
                     {
-                        successParsing = OptionsHandlers[option.Key].Invoke(variableValue, option.Value);
+                        bool optionResult = OptionsHandlers[option.Key].Invoke(variableValue, option.Value);
+                        if (!optionResult)
+                            successParsing = false;
                     }
                 }
 
                 if (successParsing)
                     variables.Add(variable.Name, variableValue);
-                else unparsedVariables.Add(variable.Name, variableValue);
+                else
+                {
+                    success = false;
+                    unparsedVariables.Add(variable.Name, variableValue);
+                }
             }
 
-            return successParsing
+            return (successParsing && success)
                 ? CommandParserResult.Success(variables, CommandFormat)
                 : CommandParserResult.Failure(unparsedVariables, CommandFormat);
         }
