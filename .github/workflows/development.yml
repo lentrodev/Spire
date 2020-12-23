@@ -27,8 +27,7 @@ jobs:
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v1
-      - name: Run './build.cmd Clean'
-        run: ./build.cmd Clean
+      - name: Run './build.cmd Compile'
+        run: ./build.cmd Compile
         env:
             GitHubToken: ${{ secrets.GITHUB_TOKEN }}
-            NuGetApiToken: ${{ secrets.NuGetApiToken }}

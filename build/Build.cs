@@ -31,7 +31,8 @@ using static Nuke.Common.Tools.DotNet.DotNetTasks;
     ImportGitHubTokenAs = "GitHubToken",
     ImportSecrets = new[] {nameof(NuGetApiToken)},
     InvokedTargets = new[] {nameof(Publish)},
-    OnPushBranches = new[] {"main"}
+    OnPushBranches = new[] {"main"},
+    PublishArtifacts = true
 )]
 class Build : NukeBuild
 {
@@ -51,7 +52,7 @@ class Build : NukeBuild
     AbsolutePath PackagesDirectory => ArtifactsDirectory / "nuget";
 
     [Parameter] readonly string NuGetApiToken;
-    
+
     Target Clean => _ => _
         .Executes(() =>
         {
@@ -108,7 +109,8 @@ class Build : NukeBuild
                             .SetAuthors(repositoryOwner)
                             .SetCopyright("Copyright © Mikhail Kozlov")
                             .SetPackageTags(new[] {"telegram", "bot"}.Concat(project.Name.ToLower().Split('.')))
-                            .SetDescription($"Package description here: {readmeUrl}#{project.Name.ToLower().Replace(".", "")}")
+                            .SetDescription(
+                                $"Package description here: {readmeUrl}#{project.Name.ToLower().Replace(".", "")}")
                             .SetPackageLicenseUrl(licenceUrl)
                             .SetRepositoryType("git")
                             .SetRepositoryUrl(repositoryUrl)
@@ -119,6 +121,7 @@ class Build : NukeBuild
 
     Target Publish => _ => _
         .DependsOn(Pack)
+        .Consumes(Pack)
         .Executes(() =>
         {
             PackagesDirectory
@@ -131,18 +134,4 @@ class Build : NukeBuild
                             .SetApiKey(NuGetApiToken)));
         });
 
-    string ExtractPackageDescription(List<string> markdownLines, string projectName)
-    {
-        const int descriptionOffset = 2;
-
-        for (int i = 0; i < markdownLines.Count; i++)
-        {
-            if (markdownLines[i] == $"#### {projectName}")
-            {
-                return markdownLines[i + descriptionOffset];
-            }
-        } 
-
-        return string.Empty;
-    }
 }
