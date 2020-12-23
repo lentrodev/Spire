@@ -57,24 +57,28 @@ namespace Spire.Core.Processing
         /// <param name="handlerContext">Handler context.</param>
         /// <param name="resolvingContainer">Autofac service resolving container.</param>
         /// <returns>Update entity processing result.</returns>
-        public async ValueTask<IUpdateEntityProcessingResult<TEntity>> Process(IHandlerContext<TEntity> handlerContext,
+        public ValueTask<IUpdateEntityProcessingResult<TEntity>> Process(IHandlerContext<TEntity> handlerContext,
             IContainer resolvingContainer)
         {
-            bool continueProcessing = true;
-
-            Stopwatch processingTimeWatcher = Stopwatch.StartNew();
-
-            foreach (var descriptor in Descriptors)
+            return new ValueTask<IUpdateEntityProcessingResult<TEntity>>(Task.Factory.StartNew(() =>
             {
-                if (continueProcessing)
-                    continueProcessing = await descriptor.InvokeHandlerSafe(resolvingContainer,
-                        new[] {typeof(bool), typeof(Task<bool>), typeof(ValueTask<bool>)}, handlerContext);
-            }
+                bool continueProcessing = true;
 
-            processingTimeWatcher.Stop();
+                Stopwatch processingTimeWatcher = Stopwatch.StartNew();
 
-            return new UpdateEntityProcessingResult<TEntity>(Guid.NewGuid(), handlerContext,
-                processingTimeWatcher.Elapsed);
+                foreach (var descriptor in Descriptors)
+                {
+                    if (continueProcessing)
+                        continueProcessing = descriptor.InvokeHandlerSafe(resolvingContainer,
+                                new[] {typeof(bool), typeof(Task<bool>), typeof(ValueTask<bool>)}, handlerContext)
+                            .GetAwaiter().GetResult();
+                }
+
+                processingTimeWatcher.Stop();
+
+                return new UpdateEntityProcessingResult<TEntity>(Guid.NewGuid(), handlerContext,
+                    processingTimeWatcher.Elapsed) as IUpdateEntityProcessingResult<TEntity>;
+            }));
         }
     }
 }

@@ -95,9 +95,17 @@ namespace Spire.Hosting
 
         public virtual Task HandleUpdate(ITelegramBotClient botClient, Update update,
             CancellationToken cancellationToken)
-            => Bot.Process(update).AsTask().ContinueWith(
-                updateEntityProcessingResult => OnUpdateProcessed?.Invoke(this,
-                    new UpdateProcessedEventArgs(updateEntityProcessingResult.Result)), cancellationToken);
+        {
+            Task.Factory.StartNew(async () =>
+            {
+                var updateEntityProcessingResult = await Bot.Process(update);
+
+                OnUpdateProcessed?.Invoke(this,
+                    new UpdateProcessedEventArgs(updateEntityProcessingResult));
+            }, cancellationToken);
+            
+            return Task.CompletedTask;
+        }
 
         public virtual Task HandleError(ITelegramBotClient botClient, Exception exception,
             CancellationToken cancellationToken)

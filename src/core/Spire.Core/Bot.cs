@@ -13,6 +13,7 @@ using Spire.Core.Abstractions.Processing.Contexts;
 using Spire.Core.Abstractions.Processing.Results;
 using Spire.Core.Extensions;
 using Spire.Core.Processing.Contexts;
+using Spire.Core.Processing.Results;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
@@ -99,11 +100,9 @@ namespace Spire.Core
 
             Type updateEntityType = updateEntity.GetType();
 
-            IUpdateEntityProcessingResult processingResult = await _processInternalMethodInfo
+            return await _processInternalMethodInfo
                 .MakeGenericMethod(updateEntityType)
                 .InvokeAsyncSafe<IUpdateEntityProcessingResult>(this, update, updateEntity);
-
-            return processingResult;
         }
 
         private async ValueTask<IUpdateEntityProcessingResult> ProcessInternal<TEntity>(Update update, TEntity entity)
@@ -118,15 +117,13 @@ namespace Spire.Core
 
             Type attributeType = updateEntityProcessor.GetType().GetGenericArguments().ElementAt(1);
 
-            IUpdateEntityProcessingResult processingResult = await _processInternalTypedMethodInfo
+            return await _processInternalTypedMethodInfo
                 .MakeGenericMethod(typeof(TEntity), attributeType)
-                .InvokeAsyncSafe<IUpdateEntityProcessingResult>(this, update, entity, updateEntityProcessor);
-
-            return processingResult;
+                .InvokeAsyncSafe<IUpdateEntityProcessingResult<TEntity>>(this, update, entity, updateEntityProcessor);
         }
 
 
-        private async ValueTask<IUpdateEntityProcessingResult> ProcessInternalTyped<TEntity,
+        private ValueTask<IUpdateEntityProcessingResult<TEntity>> ProcessInternalTyped<TEntity,
             TUpdateEntityHandlerAttribute>(Update update, TEntity entity, IUpdateEntityProcessor updateEntityProcessor)
             where TUpdateEntityHandlerAttribute : UpdateEntityHandlerAttributeBase
         {
@@ -137,10 +134,10 @@ namespace Spire.Core
                     new HandlerContext<TEntity>(update, entity, update.GetUpdateEntitySender(), BotClient,
                         ServiceContainer);
 
-                return await typedUpdateEntityProcessor.Process(handlerContext, ServiceContainer);
+                return typedUpdateEntityProcessor.Process(handlerContext, ServiceContainer);
             }
 
-            return default;
+            return new ValueTask<IUpdateEntityProcessingResult<TEntity>>();
         }
     }
 }
