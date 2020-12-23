@@ -1,6 +1,5 @@
 ﻿#region
 
-using System.Threading.Tasks;
 using Serilog;
 using Spire.Examples.Shared;
 using Spire.Hosting.Console;
@@ -10,7 +9,7 @@ namespace Spire.Examples.Console
 {
     class Program
     {
-        static Task Main(string[] args)
+        static void Main(string[] args)
         {
             ConfigureLogging();
 
@@ -30,11 +29,11 @@ namespace Spire.Examples.Console
 
             consoleBotHostBuilder.Run();
 
-            while (true)
-            {
-                System.Console.ReadKey();
-                consoleBotHostBuilder.Stop();
-            }
+             while (true)
+             {
+                 System.Console.ReadKey();
+                 consoleBotHostBuilder.Stop();
+             }
         }
 
         static void ConfigureLogging()
