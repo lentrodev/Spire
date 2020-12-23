@@ -130,8 +130,13 @@ namespace Spire.Hosting
                 throw new InvalidOperationException("Bot has been already started");
             }
 
-            IsRunning = true;
+            if (Bot == null)
+            {
+                throw new NullReferenceException("Bot instance is null. Please configure it with WithBot method.");
+            }
 
+            IsRunning = true;
+            
             Bot.BotClient.StartReceiving(this, _cancellationTokenSource.Token);
 
             OnBotStarted?.Invoke(this, EventArgs.Empty);
