@@ -1,6 +1,8 @@
 ﻿#region
 
+using System.Collections.Generic;
 using Spire.Core.Abstractions.Processing.Contexts;
+using Spire.Core.Commands.Parsing.Abstractions.Parameters;
 
 #endregion
 
@@ -12,19 +14,21 @@ namespace Spire.Core.Commands.Abstractions.Processing.Contexts
     /// <typeparam name="TEntity">Entity type.</typeparam>
     public interface ICommandContext<TEntity> : IHandlerContext<TEntity>
     {
+        IEnumerable<ICommandParameterValue> GetParameters();
+        
         /// <summary>
-        /// Gets argument value by the specified argument name.
+        /// Gets parameter value by the specified argument name.
         /// </summary>
-        /// <param name="argumentName">Argument name.</param>
-        /// <returns>Argument value.</returns>
-        string GetArgument(string argumentName);
+        /// <param name="parameterName">Parameter name.</param>
+        /// <returns>Parameter value.</returns>
+        string GetParameter(string parameterName);
 
         /// <summary>
-        /// Gets argument value by the specified argument name, converted to specified type.
+        /// Gets parameter value by the specified argument name, converted to specified type.
         /// </summary>
-        /// <param name="argumentName">Argument name.</param>
-        /// <typeparam name="T">Argument value type.</typeparam>
-        /// <returns>Argument typed value.</returns>
-        T GetArgument<T>(string argumentName);
+        /// <param name="parameterName">Parameter name.</param>
+        /// <typeparam name="T">Parameter value type.</typeparam>
+        /// <returns>Parameter typed value.</returns>
+        T GetParameter<T>(string parameterName);
     }
 }
