@@ -80,8 +80,6 @@ namespace Spire.Core.Sessions
 
                 while (!cancellationToken.IsCancellationRequested)
                 {
-                    await _updateEntityChannelReader.WaitToReadAsync(cancellationToken).ConfigureAwait(false);
-
                     if (_updateEntityChannelReader.TryRead(out lastUpdateEntity))
                         break;
                 }
