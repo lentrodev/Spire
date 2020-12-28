@@ -1,5 +1,9 @@
-﻿using Spire.Core.Markups.Abstractions;
+﻿#region
+
+using Spire.Core.Markups.Abstractions;
 using Telegram.Bot.Types.ReplyMarkups;
+
+#endregion
 
 namespace Spire.Core.Markups.Reply
 {
@@ -12,7 +16,7 @@ namespace Spire.Core.Markups.Reply
         /// Requests clients to resize the keyboard vertically for optimal fit (e.g., make the keyboard smaller if there are just two rows of <see cref="KeyboardButton"/>). Defaults to <c>false</c>, in which case the custom keyboard is always of the same height as the app's standard keyboard.
         /// </summary>
         public bool ResizeKeyboard { get; set; }
-        
+
         /// <summary>
         /// Optional. Requests clients to hide the keyboard as soon as it's been used. Defaults to <c>false</c>.
         /// </summary>

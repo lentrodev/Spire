@@ -1,9 +1,12 @@
-﻿using System;
+﻿#region
+
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Linq;
 using Spire.Core.Markups.Abstractions;
 using Telegram.Bot.Types.ReplyMarkups;
+
+#endregion
 
 namespace Spire.Core.Markups
 {
@@ -13,11 +16,13 @@ namespace Spire.Core.Markups
     /// <typeparam name="TKeyboardMarkupRowBuilder">Keyboard markup row builder type.</typeparam>
     /// <typeparam name="TKeyboardMarkup">Keyboard markup type.</typeparam>
     /// <typeparam name="TKeyboardMarkupButton">Keyboard markup button type.</typeparam>
-    public abstract class KeyboardMarkupRowBuilderBase<TKeyboardMarkupRowBuilder, TKeyboardMarkup, TKeyboardMarkupButton> 
+    public abstract class KeyboardMarkupRowBuilderBase<TKeyboardMarkupRowBuilder, TKeyboardMarkup,
+            TKeyboardMarkupButton>
         : IKeyboardMarkupRowBuilder<TKeyboardMarkupRowBuilder, TKeyboardMarkup, TKeyboardMarkupButton>
         where TKeyboardMarkup : IReplyMarkup
         where TKeyboardMarkupButton : IKeyboardButton
-    where TKeyboardMarkupRowBuilder : KeyboardMarkupRowBuilderBase<TKeyboardMarkupRowBuilder, TKeyboardMarkup, TKeyboardMarkupButton> 
+        where TKeyboardMarkupRowBuilder : KeyboardMarkupRowBuilderBase<TKeyboardMarkupRowBuilder, TKeyboardMarkup,
+            TKeyboardMarkupButton>
     {
         private readonly ICollection<TKeyboardMarkupButton> _rowButtons;
 
@@ -25,7 +30,7 @@ namespace Spire.Core.Markups
         {
             _rowButtons = new Collection<TKeyboardMarkupButton>();
         }
-        
+
         /// <summary>
         /// Adds new button to the row.
         /// </summary>
@@ -35,7 +40,7 @@ namespace Spire.Core.Markups
         {
             _rowButtons.Add(keyboardMarkupButton ?? throw new ArgumentNullException(nameof(keyboardMarkupButton)));
 
-            return (TKeyboardMarkupRowBuilder)this;
+            return (TKeyboardMarkupRowBuilder) this;
         }
 
         /// <summary>

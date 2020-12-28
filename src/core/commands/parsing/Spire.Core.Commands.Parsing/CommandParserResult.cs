@@ -1,9 +1,12 @@
-﻿using System;
+﻿#region
+
 using System.Collections.Generic;
 using System.Linq;
 using Spire.Core.Commands.Parsing.Abstractions;
 using Spire.Core.Commands.Parsing.Abstractions.Parameters;
 using Spire.Core.Commands.Parsing.Parameters;
+
+#endregion
 
 namespace Spire.Core.Commands.Parsing
 {
@@ -31,7 +34,7 @@ namespace Spire.Core.Commands.Parsing
         /// Parsed parameters values. If <see cref="IsSuccess"/> is <see langword="false"/>, contains collection of parameters which were unable to parse.
         /// </summary>
         public IEnumerable<ICommandParameterValue> Values { get; }
-        
+
         private CommandParserResult(
             bool isSuccess,
             ICommandFormat commandFormat,

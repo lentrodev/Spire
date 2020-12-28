@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Spire.Core.Commands.Parsing.Abstractions.Parameters
+﻿namespace Spire.Core.Commands.Parsing.Abstractions.Parameters
 {
     /// <summary>
     /// Base interface for implementing command parameter value.
@@ -11,7 +9,7 @@ namespace Spire.Core.Commands.Parsing.Abstractions.Parameters
         /// Command parameter, this value related to.
         /// </summary>
         ICommandParameter Parameter { get; }
-        
+
         /// <summary>
         /// Command parameter value related to <see cref="Parameter"/>.
         /// </summary>

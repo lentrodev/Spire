@@ -24,17 +24,18 @@ namespace Spire.Examples.Shared.Commands
         }
 
         [MessageCommandHandler("feedback", Defaults.DefaultProcessorId)]
-        public async Task ProvideFeedbackCommand(ICommandContext<Message> commandContext, 
-            Random random, 
+        public async Task ProvideFeedbackCommand(ICommandContext<Message> commandContext,
+            Random random,
             InlineKeyboardMarkupBuilder inlineKeyboardBuilder)
         {
             ISession<Message> session = commandContext.Session();
-            
+
             ISessionUpdateEntityRequestResult<Message> feedbackMessageRequestResult = await session.RequestEntityAsync(
                 new SessionUpdateEntityRequestOptions<Message>
                 {
                     Action = state =>
-                        commandContext.BotClient.SendTextMessageAsync(commandContext.Entity.Chat, "Write a feedback message:"),
+                        commandContext.BotClient.SendTextMessageAsync(commandContext.Entity.Chat,
+                            "Write a feedback message:"),
                     Matcher = state => state.LastEntity.Text == "123"
                 });
 

@@ -1,7 +1,11 @@
-﻿using System;
+﻿#region
+
+using System;
 using System.Collections.Generic;
 using Spire.Core.Commands.Parsing.Abstractions;
 using Spire.Core.Commands.Parsing.Abstractions.Parameters;
+
+#endregion
 
 namespace Spire.Core.Commands.Parsing
 {
@@ -14,7 +18,7 @@ namespace Spire.Core.Commands.Parsing
         /// Command format.
         /// </summary>
         public string Format { get; }
-        
+
         /// <summary>
         /// Command parameters, parsed from <see cref="Format"/>.
         /// </summary>
@@ -28,7 +32,8 @@ namespace Spire.Core.Commands.Parsing
         public CommandFormat(string format, IEnumerable<ICommandParameter> parameters)
         {
             Format = format ?? throw new ArgumentNullException(nameof(format));
-            Parameters = parameters ?? throw new ArgumentNullException(nameof(parameters));;
+            Parameters = parameters ?? throw new ArgumentNullException(nameof(parameters));
+            ;
         }
     }
 }

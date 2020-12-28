@@ -1,5 +1,9 @@
-﻿using System.Collections.Generic;
+﻿#region
+
+using System.Collections.Generic;
 using Spire.Core.Commands.Parsing.Abstractions.Parameters;
+
+#endregion
 
 namespace Spire.Core.Commands.Parsing.Abstractions
 {
@@ -12,7 +16,7 @@ namespace Spire.Core.Commands.Parsing.Abstractions
         /// Command format.
         /// </summary>
         string Format { get; }
-        
+
         /// <summary>
         /// Command parameters, parsed from <see cref="Format"/>.
         /// </summary>

@@ -1,4 +1,6 @@
-﻿using System;
+﻿#region
+
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
@@ -8,6 +10,8 @@ using Spire.Core.Commands.Parsing.Abstractions.Parameters;
 using Spire.Core.Commands.Parsing.Abstractions.Parameters.Options;
 using Spire.Core.Commands.Parsing.Parameters;
 using Spire.Core.Commands.Parsing.Parameters.Options;
+
+#endregion
 
 namespace Spire.Core.Commands.Parsing
 {
@@ -22,7 +26,7 @@ namespace Spire.Core.Commands.Parsing
         /// Command parser configuration.
         /// </summary>
         public ICommandParserConfiguration Configuration { get; }
-        
+
         /// <summary>
         /// Collection of command parameter option handlers.
         /// </summary>
@@ -42,11 +46,11 @@ namespace Spire.Core.Commands.Parsing
         /// Command parameter option pattern.
         /// </summary>
         public string ParameterOptionPattern { get; }
-        
+
         #endregion
-        
-        #region RegEx pattern templates 
-        
+
+        #region RegEx pattern templates
+
         private readonly string ParameterTemplatePattern
             = "[{0}](?<Name>[A-Za-z0-9_-]+)([{2}](?<Type>\\w+))?([{2}](?<IsOptional>(optional|true)))?([{3}](?<Options>[^{0}{1}{2}{3}]+))?[{1}]";
 
@@ -55,9 +59,9 @@ namespace Spire.Core.Commands.Parsing
         private readonly string ParameterRegexTemplatePattern = "(?<{0}>{1})";
 
         #endregion
-        
+
         #region Public methods and constructors
-        
+
         /// <summary>
         /// Creates new <see cref="CommandParser"/> with specified configuration, types, and option handlers.
         /// </summary>
@@ -69,7 +73,8 @@ namespace Spire.Core.Commands.Parsing
             IEnumerable<ICommandParameterType> parameterTypes,
             IEnumerable<ICommandParameterOptionHandler> optionsHandlers)
         {
-            Configuration = commandParserConfiguration ?? throw new ArgumentNullException(nameof(commandParserConfiguration));
+            Configuration = commandParserConfiguration ??
+                            throw new ArgumentNullException(nameof(commandParserConfiguration));
             OptionHandlers = optionsHandlers ?? throw new ArgumentNullException(nameof(optionsHandlers));
             Types = parameterTypes ?? throw new ArgumentNullException(nameof(parameterTypes));
 
@@ -78,18 +83,20 @@ namespace Spire.Core.Commands.Parsing
 
             if (optionHandlersDuplicates.Any())
             {
-                throw new InvalidOperationException($"There are duplicated command parameter option handlers with these names: {string.Join(", ", optionHandlersDuplicates.Select(duplicate => $"'{duplicate}'"))}");
+                throw new InvalidOperationException(
+                    $"There are duplicated command parameter option handlers with these names: {string.Join(", ", optionHandlersDuplicates.Select(duplicate => $"'{duplicate}'"))}");
             }
-            
+
             IEnumerable<string> parameterTypesDuplicates =
                 FindDuplicates(Types, handler => handler.Name).ToList();
 
             if (parameterTypesDuplicates.Any())
             {
-                throw new InvalidOperationException($"There are duplicated command parameter types with these names: {string.Join(", ", parameterTypesDuplicates.Select(duplicate => $"'{duplicate}'"))}");
+                throw new InvalidOperationException(
+                    $"There are duplicated command parameter types with these names: {string.Join(", ", parameterTypesDuplicates.Select(duplicate => $"'{duplicate}'"))}");
             }
-            
-            
+
+
             ParameterPattern = string.Format(
                 ParameterTemplatePattern,
                 Configuration.ParameterStartToken,
@@ -234,7 +241,7 @@ namespace Spire.Core.Commands.Parsing
                         commandParameter,
                         commandParameterGroup.Value));
                 }
-                else if(!commandParameter.IsOptional)
+                else if (!commandParameter.IsOptional)
                 {
                     commandMatchResult = false;
                     wrongParameters.Add(commandParameter);
@@ -250,9 +257,9 @@ namespace Spire.Core.Commands.Parsing
         }
 
         #endregion
-        
+
         #region Private methods
-        
+
         private IEnumerable<ICommandParameterOption> ParseOptions(string optionsSource)
         {
             Regex optionRegex = new Regex(ParameterOptionPattern);
@@ -271,11 +278,12 @@ namespace Spire.Core.Commands.Parsing
                     string name = optionGroups["Name"].Value;
                     string value = optionGroups["Value"].Value;
 
-                    if (!OptionHandlers.Any(optionHandler => string.Compare(optionHandler.Name, name, StringComparison.Ordinal) != 0))
+                    if (!OptionHandlers.Any(optionHandler =>
+                        string.Compare(optionHandler.Name, name, StringComparison.Ordinal) != 0))
                     {
                         throw new InvalidOperationException($"There is no option handler for '{name}' option.");
                     }
-                    
+
                     yield return new CommandParameterOption(name, value);
                 }
                 else
@@ -283,8 +291,8 @@ namespace Spire.Core.Commands.Parsing
                     throw new InvalidOperationException($"Invalid command parameter option format: {option}.");
                 }
             }
-        }   
-        
+        }
+
         private string GetCommandPattern(ICommandFormat commandFormat)
         {
             string commandRegex = commandFormat.Format;
@@ -292,7 +300,8 @@ namespace Spire.Core.Commands.Parsing
             foreach (ICommandParameter commandParameter in commandFormat.Parameters)
             {
                 commandRegex = commandRegex.Replace(commandParameter.Format,
-                    string.Format(ParameterRegexTemplatePattern, commandParameter.Name, commandParameter.Type.Pattern) + "?");
+                    string.Format(ParameterRegexTemplatePattern, commandParameter.Name, commandParameter.Type.Pattern) +
+                    "?");
             }
 
             string whitespacePattern = "\\s*";
@@ -305,10 +314,10 @@ namespace Spire.Core.Commands.Parsing
             commandRegex = commandRegex + "(.*)";
 
             commandRegex = $"^{commandRegex}$";
-            
+
             return commandRegex;
         }
-        
+
         private IEnumerable<TKey> FindDuplicates<T, TKey>(IEnumerable<T> enumeration, Func<T, TKey> keySelector)
         {
             return enumeration
@@ -316,7 +325,7 @@ namespace Spire.Core.Commands.Parsing
                 .Where(grouping => grouping.Count() > 1)
                 .Select(duplicate => duplicate.Key);
         }
-        
+
         #endregion
     }
 }

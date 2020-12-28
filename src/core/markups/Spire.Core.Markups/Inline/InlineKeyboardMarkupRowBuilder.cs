@@ -1,14 +1,17 @@
-﻿using System.Collections.Generic;
-using Spire.Core.Markups.Abstractions;
+﻿#region
+
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.ReplyMarkups;
+
+#endregion
 
 namespace Spire.Core.Markups.Inline
 {
     /// <summary>
     /// Keyboard markup row builder for <see cref="InlineKeyboardMarkup"/>. Implementation of <see cref="KeyboardMarkupRowBuilderBase{InlineKeyboardMarkupRowBuilder, InlineKeyboardMarkup, InlineKeyboardButton}"/>
     /// </summary>
-    public class InlineKeyboardMarkupRowBuilder : KeyboardMarkupRowBuilderBase<InlineKeyboardMarkupRowBuilder, InlineKeyboardMarkup, InlineKeyboardButton>
+    public class InlineKeyboardMarkupRowBuilder : KeyboardMarkupRowBuilderBase<InlineKeyboardMarkupRowBuilder,
+        InlineKeyboardMarkup, InlineKeyboardButton>
     {
         /// <summary>
         /// Creates an inline keyboard button that opens a HTTP url when pressed and adds it to the row.
@@ -27,7 +30,7 @@ namespace Spire.Core.Markups.Inline
         /// <returns>Configured inline keyboard markup row builder.</returns>
         public InlineKeyboardMarkupRowBuilder WithLoginUrlButton(string text, LoginUrl loginUrl) =>
             WithButton(InlineKeyboardButton.WithLoginUrl(text, loginUrl));
-        
+
         /// <summary>
         /// Creates an inline keyboard button that sends <see cref="CallbackQuery"/> to bot when pressed and adds it to the row.
         /// </summary>

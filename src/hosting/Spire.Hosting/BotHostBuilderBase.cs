@@ -5,7 +5,6 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Spire.Core.Abstractions;
-using Spire.Core.Abstractions.Processing.Results;
 using Spire.Hosting.Args;
 using Telegram.Bot;
 using Telegram.Bot.Extensions.Polling;
@@ -103,7 +102,7 @@ namespace Spire.Hosting
                 OnUpdateProcessed?.Invoke(this,
                     new UpdateProcessedEventArgs(updateEntityProcessingResult));
             }, cancellationToken);
-            
+
             return Task.CompletedTask;
         }
 
@@ -136,7 +135,7 @@ namespace Spire.Hosting
             }
 
             IsRunning = true;
-            
+
             Bot.BotClient.StartReceiving(this, _cancellationTokenSource.Token);
 
             OnBotStarted?.Invoke(this, EventArgs.Empty);

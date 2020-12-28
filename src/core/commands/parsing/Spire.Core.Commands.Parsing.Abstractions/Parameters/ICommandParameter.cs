@@ -1,5 +1,9 @@
-﻿using System.Collections.Generic;
+﻿#region
+
+using System.Collections.Generic;
 using Spire.Core.Commands.Parsing.Abstractions.Parameters.Options;
+
+#endregion
 
 namespace Spire.Core.Commands.Parsing.Abstractions.Parameters
 {

@@ -1,12 +1,16 @@
-﻿using Spire.Core.Markups.Abstractions;
+﻿#region
+
 using Telegram.Bot.Types.ReplyMarkups;
+
+#endregion
 
 namespace Spire.Core.Markups.Reply
 {
     /// <summary>
     /// Keyboard markup row builder for <see cref="ReplyKeyboardMarkup"/>. Implementation of <see cref="KeyboardMarkupBuilderBase{TKeyboardMarkup,TKeyboardMarkupButton,TKeyboardMarkupRowBuilder,TKeyboardMarkupBuildOptions}"/>.
     /// </summary>
-    public class ReplyKeyboardMarkupRowBuilder : KeyboardMarkupRowBuilderBase<ReplyKeyboardMarkupRowBuilder, ReplyKeyboardMarkup, KeyboardButton>
+    public class ReplyKeyboardMarkupRowBuilder : KeyboardMarkupRowBuilderBase<ReplyKeyboardMarkupRowBuilder,
+        ReplyKeyboardMarkup, KeyboardButton>
     {
         /// <summary>
         /// Generate a keyboard button to request for contact and adds it to the row.

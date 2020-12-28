@@ -1,7 +1,11 @@
-﻿using System;
+﻿#region
+
+using System;
 using System.Collections.Generic;
 using Spire.Core.Commands.Parsing.Abstractions.Parameters;
 using Spire.Core.Commands.Parsing.Abstractions.Parameters.Options;
+
+#endregion
 
 namespace Spire.Core.Commands.Parsing.Parameters
 {

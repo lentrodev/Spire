@@ -1,5 +1,9 @@
-﻿using Spire.Core.Markups.Abstractions;
+﻿#region
+
+using Spire.Core.Markups.Abstractions;
 using Telegram.Bot.Types.ReplyMarkups;
+
+#endregion
 
 namespace Spire.Core.Markups.Inline
 {
@@ -8,6 +12,5 @@ namespace Spire.Core.Markups.Inline
     /// </summary>
     public class InlineKeyboardMarkupBuildOptions : IKeyboardMarkupBuildOptions
     {
-        
     }
 }

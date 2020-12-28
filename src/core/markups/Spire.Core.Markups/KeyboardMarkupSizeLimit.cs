@@ -1,5 +1,9 @@
-﻿using Spire.Core.Markups.Abstractions;
+﻿#region
+
+using Spire.Core.Markups.Abstractions;
 using Telegram.Bot.Types.ReplyMarkups;
+
+#endregion
 
 namespace Spire.Core.Markups
 {
@@ -12,12 +16,12 @@ namespace Spire.Core.Markups
         /// Max buttons count.
         /// </summary>
         public int Buttons { get; }
-        
+
         /// <summary>
         /// Max columns count.
         /// </summary>
         public int Columns { get; }
-        
+
         /// <summary>
         /// Max rows count. 
         /// </summary>
@@ -40,11 +44,10 @@ namespace Spire.Core.Markups
         /// Creates new <see cref="IKeyboardMarkupSizeLimit"/> for the <see cref="ReplyKeyboardMarkup"/>.
         /// </summary>
         public static IKeyboardMarkupSizeLimit ReplyKeyboard => new KeyboardMarkupSizeLimit(300, 12, 300);
-        
+
         /// <summary>
         /// Creates new <see cref="IKeyboardMarkupSizeLimit"/> for the <see cref="InlineKeyboardMarkup"/>.
         /// </summary>
         public static IKeyboardMarkupSizeLimit InlineKeyboard => new KeyboardMarkupSizeLimit(100, 8, 100);
-
     }
 }

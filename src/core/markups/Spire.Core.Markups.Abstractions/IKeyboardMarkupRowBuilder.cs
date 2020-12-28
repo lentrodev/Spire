@@ -1,6 +1,9 @@
-﻿using System.Collections;
+﻿#region
+
 using System.Collections.Generic;
 using Telegram.Bot.Types.ReplyMarkups;
+
+#endregion
 
 namespace Spire.Core.Markups.Abstractions
 {
@@ -13,7 +16,8 @@ namespace Spire.Core.Markups.Abstractions
     public interface IKeyboardMarkupRowBuilder<out TKeyboardMarkupRowBuilder, TKeyboardMarkup, TKeyboardMarkupButton>
         where TKeyboardMarkup : IReplyMarkup
         where TKeyboardMarkupButton : IKeyboardButton
-    where TKeyboardMarkupRowBuilder : IKeyboardMarkupRowBuilder<TKeyboardMarkupRowBuilder, TKeyboardMarkup, TKeyboardMarkupButton>
+        where TKeyboardMarkupRowBuilder : IKeyboardMarkupRowBuilder<TKeyboardMarkupRowBuilder, TKeyboardMarkup,
+            TKeyboardMarkupButton>
     {
         /// <summary>
         /// Adds new button to the row.

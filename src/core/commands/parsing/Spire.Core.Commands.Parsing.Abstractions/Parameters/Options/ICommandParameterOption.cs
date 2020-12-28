@@ -9,7 +9,7 @@
         /// Command parameter option name.
         /// </summary>
         string Name { get; }
-        
+
         /// <summary>
         /// Command parameter option value.
         /// </summary>

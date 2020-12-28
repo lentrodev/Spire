@@ -1,5 +1,9 @@
-﻿using System;
+﻿#region
+
+using System;
 using Spire.Core.Commands.Parsing.Abstractions.Parameters;
+
+#endregion
 
 namespace Spire.Core.Commands.Parsing.Parameters
 {
@@ -12,7 +16,7 @@ namespace Spire.Core.Commands.Parsing.Parameters
         /// Command parameter, this value related to.
         /// </summary>
         public ICommandParameter Parameter { get; }
-        
+
         /// <summary>
         /// Command parameter value related to <see cref="Parameter"/>.
         /// </summary>

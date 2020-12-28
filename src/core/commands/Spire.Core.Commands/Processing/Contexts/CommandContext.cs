@@ -22,7 +22,7 @@ namespace Spire.Core.Commands.Processing.Contexts
     public class CommandContext<TEntity> : HandlerContext<TEntity>, ICommandContext<TEntity>
     {
         private readonly IEnumerable<ICommandParameterValue> _commandParameterValues;
-        
+
         public IEnumerable<ICommandParameterValue> GetParameters()
         {
             return _commandParameterValues;
@@ -33,7 +33,8 @@ namespace Spire.Core.Commands.Processing.Contexts
         /// </summary>
         /// <param name="commandParameterValues">Command arguments.</param>
         /// <param name="handlerContext">Handler context.</param>
-        public CommandContext(IEnumerable<ICommandParameterValue> commandParameterValues, IHandlerContext<TEntity> handlerContext)
+        public CommandContext(IEnumerable<ICommandParameterValue> commandParameterValues,
+            IHandlerContext<TEntity> handlerContext)
             : this(commandParameterValues, handlerContext.Update, handlerContext.Entity, handlerContext.Sender,
                 handlerContext.BotClient, handlerContext.Container)
         {
@@ -49,7 +50,8 @@ namespace Spire.Core.Commands.Processing.Contexts
         /// <param name="sender">Update sender.</param>
         /// <param name="botClient">Telegram bot client.</param>
         /// <param name="container">Autofac service resolving container.</param>
-        public CommandContext(IEnumerable<ICommandParameterValue> commandParameterValues, Update update, TEntity entity, User sender,
+        public CommandContext(IEnumerable<ICommandParameterValue> commandParameterValues, Update update, TEntity entity,
+            User sender,
             ITelegramBotClient botClient, IContainer container) : base(update, entity, sender, botClient, container)
         {
             _commandParameterValues = commandParameterValues;
@@ -57,9 +59,10 @@ namespace Spire.Core.Commands.Processing.Contexts
 
         private ICommandParameterValue GetParameterValue(string parameterName)
         {
-            return _commandParameterValues.FirstOrDefault(parameterValue => string.Compare(parameterValue.Value, parameterName, StringComparison.Ordinal) == 0);
+            return _commandParameterValues.FirstOrDefault(parameterValue =>
+                string.Compare(parameterValue.Value, parameterName, StringComparison.Ordinal) == 0);
         }
-        
+
         /// <summary>
         /// Gets parameter value by the specified argument name.
         /// </summary>

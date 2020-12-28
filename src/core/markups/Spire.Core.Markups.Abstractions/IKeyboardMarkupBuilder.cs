@@ -1,5 +1,9 @@
-﻿using System;
+﻿#region
+
+using System;
 using Telegram.Bot.Types.ReplyMarkups;
+
+#endregion
 
 namespace Spire.Core.Markups.Abstractions
 {
@@ -10,11 +14,13 @@ namespace Spire.Core.Markups.Abstractions
     /// <typeparam name="TKeyboardMarkupButton">Keyboard markup button type.</typeparam>
     /// <typeparam name="TKeyboardMarkupRowBuilder">Keyboard markup row builder type.</typeparam>
     /// <typeparam name="TKeyboardMarkupBuildOptions">Keyboard markup build options type.</typeparam> 
-    public interface IKeyboardMarkupBuilder<TKeyboardMarkup, TKeyboardMarkupButton, TKeyboardMarkupRowBuilder, TKeyboardMarkupBuildOptions> 
+    public interface IKeyboardMarkupBuilder<TKeyboardMarkup, TKeyboardMarkupButton, TKeyboardMarkupRowBuilder,
+        TKeyboardMarkupBuildOptions>
         where TKeyboardMarkup : IReplyMarkup
-        where  TKeyboardMarkupButton : IKeyboardButton
+        where TKeyboardMarkupButton : IKeyboardButton
         where TKeyboardMarkupBuildOptions : IKeyboardMarkupBuildOptions
-        where TKeyboardMarkupRowBuilder : IKeyboardMarkupRowBuilder<TKeyboardMarkupRowBuilder, TKeyboardMarkup, TKeyboardMarkupButton>
+        where TKeyboardMarkupRowBuilder : IKeyboardMarkupRowBuilder<TKeyboardMarkupRowBuilder, TKeyboardMarkup,
+            TKeyboardMarkupButton>
 
     {
         /// <summary>
@@ -22,7 +28,8 @@ namespace Spire.Core.Markups.Abstractions
         /// </summary>
         /// <param name="configureRow">Row configurator func.</param>
         /// <returns>Configured keyboard markup builder.</returns>
-        IKeyboardMarkupBuilder<TKeyboardMarkup, TKeyboardMarkupButton, TKeyboardMarkupRowBuilder, TKeyboardMarkupBuildOptions> 
+        IKeyboardMarkupBuilder<TKeyboardMarkup, TKeyboardMarkupButton, TKeyboardMarkupRowBuilder,
+                TKeyboardMarkupBuildOptions>
             WithRow(Action<TKeyboardMarkupRowBuilder> configureRow);
 
         /// <summary>
@@ -31,8 +38,9 @@ namespace Spire.Core.Markups.Abstractions
         /// <param name="keyboardMarkupBuilder">Keyboard markup builder to combine.</param>
         /// <returns>Configured keyboard markup builder.</returns>
         IKeyboardMarkupBuilder<TKeyboardMarkup, TKeyboardMarkupButton, TKeyboardMarkupRowBuilder,
-            TKeyboardMarkupBuildOptions> Combine(IKeyboardMarkupBuilder<TKeyboardMarkup, TKeyboardMarkupButton, TKeyboardMarkupRowBuilder,
-            TKeyboardMarkupBuildOptions> keyboardMarkupBuilder);
+            TKeyboardMarkupBuildOptions> Combine(
+            IKeyboardMarkupBuilder<TKeyboardMarkup, TKeyboardMarkupButton, TKeyboardMarkupRowBuilder,
+                TKeyboardMarkupBuildOptions> keyboardMarkupBuilder);
 
         /// <summary>
         /// Adds buttons from <see cref="TKeyboardMarkupButton"/> to the current keyboard markup builder.
@@ -48,7 +56,7 @@ namespace Spire.Core.Markups.Abstractions
         /// <returns>Configured keyboard markup builder.</returns>
         IKeyboardMarkupBuilder<TKeyboardMarkup, TKeyboardMarkupButton, TKeyboardMarkupRowBuilder,
             TKeyboardMarkupBuildOptions> Clear();
-        
+
         /// <summary>
         /// Builds keyboard markup.
         /// </summary>

@@ -1,5 +1,9 @@
-﻿using System.Collections.Generic;
+﻿#region
+
+using System.Collections.Generic;
 using Spire.Core.Commands.Parsing.Abstractions.Parameters;
+
+#endregion
 
 namespace Spire.Core.Commands.Parsing.Abstractions
 {
@@ -16,13 +20,13 @@ namespace Spire.Core.Commands.Parsing.Abstractions
         /// <summary>
         /// Command format, used for parsing parameter values.
         /// </summary>
-        ICommandFormat CommandFormat { get; }   
-        
+        ICommandFormat CommandFormat { get; }
+
         /// <summary>
         /// Source command text, used for parsing command parameter values, according to <see cref="CommandFormat"/>.
         /// </summary>
         string CommandText { get; }
-        
+
         /// <summary>
         /// Parsed parameters values. If <see cref="IsSuccess"/> is <see langword="false"/>, contains collection of parameters which were unable to parse.
         /// </summary>

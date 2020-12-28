@@ -1,4 +1,6 @@
-﻿using System;
+﻿#region
+
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
@@ -6,6 +8,8 @@ using Spire.Core.Commands.Parsing.Abstractions;
 using Spire.Core.Commands.Parsing.Abstractions.Parameters;
 using Spire.Core.Commands.Parsing.Abstractions.Parameters.Options;
 using Spire.Core.Commands.Parsing.Parameters;
+
+#endregion
 
 namespace Spire.Core.Commands.Parsing
 {
@@ -17,18 +21,18 @@ namespace Spire.Core.Commands.Parsing
         /// <summary>
         /// Creates new <see cref="ICommandParserBuilder"/>.
         /// </summary>
-        public static ICommandParserBuilder New => new CommandParserBuilder(); 
-        
+        public static ICommandParserBuilder New => new CommandParserBuilder();
+
         private readonly ICollection<ICommandParameterType> _commandParameterTypes;
         private readonly ICollection<ICommandParameterOptionHandler> _commandParameterOptionHandlers;
         private ICommandParserConfiguration _commandParserConfiguration;
-        
+
         private CommandParserBuilder()
         {
             _commandParameterTypes = new Collection<ICommandParameterType>();
             _commandParameterOptionHandlers = new Collection<ICommandParameterOptionHandler>();
         }
-        
+
         /// <summary>
         /// Sets default command parser settings.
         /// </summary>
@@ -36,14 +40,14 @@ namespace Spire.Core.Commands.Parsing
         public ICommandParserBuilder WithDefaults()
         {
             _commandParserConfiguration = CommandParserConfiguration.Default;
-            
+
             _commandParameterTypes.Clear();
-            
+
             foreach (ICommandParameterType commandParameterType in CommandParameterTypes.All)
             {
                 _commandParameterTypes.Add(commandParameterType);
             }
-            
+
             return this;
         }
 
@@ -52,7 +56,8 @@ namespace Spire.Core.Commands.Parsing
         /// </summary>
         /// <param name="defaultsOverriderConfigurator">Overrider configurator.</param>
         /// <returns>Configured <see cref="ICommandParserBuilder"/> instance.</returns>
-        public ICommandParserBuilder WithOverridenDefaults(Action<ICommandParserConfiguration> defaultsOverriderConfigurator)
+        public ICommandParserBuilder WithOverridenDefaults(
+            Action<ICommandParserConfiguration> defaultsOverriderConfigurator)
         {
             _commandParserConfiguration ??= CommandParserConfiguration.Default;
 
@@ -60,7 +65,7 @@ namespace Spire.Core.Commands.Parsing
             {
                 throw new ArgumentNullException(nameof(defaultsOverriderConfigurator));
             }
-            
+
             defaultsOverriderConfigurator(_commandParserConfiguration);
 
             return this;
@@ -73,7 +78,8 @@ namespace Spire.Core.Commands.Parsing
         /// <returns>Configured <see cref="ICommandParserBuilder"/> instance.</returns>
         public ICommandParserBuilder WithConfiguration(ICommandParserConfiguration commandParserConfiguration)
         {
-            _commandParserConfiguration = commandParserConfiguration ?? throw new ArgumentNullException(nameof(commandParserConfiguration));
+            _commandParserConfiguration = commandParserConfiguration ??
+                                          throw new ArgumentNullException(nameof(commandParserConfiguration));
 
             return this;
         }
@@ -91,12 +97,14 @@ namespace Spire.Core.Commands.Parsing
             }
 
             if (_commandParameterTypes.Any(existingCommandParameterType =>
-                string.Compare(existingCommandParameterType.Name, commandParameterType.Name, StringComparison.Ordinal) == 0))
+                string.Compare(existingCommandParameterType.Name, commandParameterType.Name,
+                    StringComparison.Ordinal) == 0))
             {
                 throw new ArgumentException(
-                    $"Specified command parameter type '{commandParameterType.Name}' already exists.", nameof(commandParameterType));
+                    $"Specified command parameter type '{commandParameterType.Name}' already exists.",
+                    nameof(commandParameterType));
             }
-            
+
             _commandParameterTypes.Add(commandParameterType);
 
             return this;
@@ -108,7 +116,9 @@ namespace Spire.Core.Commands.Parsing
         /// <param name="commandParameterType">Parameter type instance.</param>
         /// <typeparam name="TCommandParameterType">Parameter type.</typeparam>
         /// <returns>Configured <see cref="ICommandParserBuilder"/> instance.</returns>
-        public ICommandParserBuilder WithParameterType<TCommandParameterType>(TCommandParameterType commandParameterType) where TCommandParameterType : class, ICommandParameterType
+        public ICommandParserBuilder
+            WithParameterType<TCommandParameterType>(TCommandParameterType commandParameterType)
+            where TCommandParameterType : class, ICommandParameterType
         {
             return WithParameterType(commandParameterType as ICommandParameterType);
         }
@@ -118,7 +128,8 @@ namespace Spire.Core.Commands.Parsing
         /// </summary>
         /// <typeparam name="TCommandParameterType">Parameter type.</typeparam>
         /// <returns>Configured <see cref="ICommandParserBuilder"/> instance.</returns>
-        public ICommandParserBuilder WithParameterType<TCommandParameterType>() where TCommandParameterType : class, ICommandParameterType, new()
+        public ICommandParserBuilder WithParameterType<TCommandParameterType>()
+            where TCommandParameterType : class, ICommandParameterType, new()
         {
             return WithParameterType(new TCommandParameterType());
         }
@@ -128,19 +139,23 @@ namespace Spire.Core.Commands.Parsing
         /// </summary>
         /// <param name="commandParameterOptionHandler">Command parameter option handler.</param>
         /// <returns>Configured <see cref="ICommandParserBuilder"/> instance.</returns>
-        public ICommandParserBuilder WithParameterOptionHandler(ICommandParameterOptionHandler commandParameterOptionHandler)
+        public ICommandParserBuilder WithParameterOptionHandler(
+            ICommandParameterOptionHandler commandParameterOptionHandler)
         {
             if (commandParameterOptionHandler == null)
             {
                 throw new ArgumentNullException(nameof(commandParameterOptionHandler));
             }
-            
-            if(_commandParameterOptionHandlers.Any(existingCommandParameterHandler => string.Compare(existingCommandParameterHandler.Name, commandParameterOptionHandler.Name, StringComparison.Ordinal) == 0))
+
+            if (_commandParameterOptionHandlers.Any(existingCommandParameterHandler =>
+                string.Compare(existingCommandParameterHandler.Name, commandParameterOptionHandler.Name,
+                    StringComparison.Ordinal) == 0))
             {
                 throw new ArgumentException(
-                    $"Specified command parameter option handler '{commandParameterOptionHandler.Name}' already exists.", nameof(commandParameterOptionHandler));
+                    $"Specified command parameter option handler '{commandParameterOptionHandler.Name}' already exists.",
+                    nameof(commandParameterOptionHandler));
             }
-            
+
             _commandParameterOptionHandlers.Add(commandParameterOptionHandler);
 
             return this;
@@ -153,7 +168,8 @@ namespace Spire.Core.Commands.Parsing
         /// <typeparam name="TCommandParameterOptionHandler">Command parameter option handler type.</typeparam>
         /// <returns>Configured <see cref="ICommandParserBuilder"/> instance.</returns>
         public ICommandParserBuilder WithParameterOptionHandler<TCommandParameterOptionHandler>(
-            TCommandParameterOptionHandler commandParameterOptionHandler) where TCommandParameterOptionHandler : class, ICommandParameterOptionHandler
+            TCommandParameterOptionHandler commandParameterOptionHandler)
+            where TCommandParameterOptionHandler : class, ICommandParameterOptionHandler
         {
             return WithParameterOptionHandler(commandParameterOptionHandler as ICommandParameterOptionHandler);
         }
@@ -163,7 +179,8 @@ namespace Spire.Core.Commands.Parsing
         /// </summary>
         /// <typeparam name="TCommandParameterOptionHandler">Command parameter option handler type.</typeparam>
         /// <returns>Configured <see cref="ICommandParserBuilder"/> instance.</returns>
-        public ICommandParserBuilder WithParameterOptionHandler<TCommandParameterOptionHandler>() where TCommandParameterOptionHandler : class, ICommandParameterOptionHandler, new()
+        public ICommandParserBuilder WithParameterOptionHandler<TCommandParameterOptionHandler>()
+            where TCommandParameterOptionHandler : class, ICommandParameterOptionHandler, new()
         {
             return WithParameterOptionHandler(new TCommandParameterOptionHandler());
         }
@@ -178,7 +195,7 @@ namespace Spire.Core.Commands.Parsing
             {
                 WithDefaults();
             }
-            
+
             return new CommandParser(_commandParserConfiguration, _commandParameterTypes,
                 _commandParameterOptionHandlers);
         }

@@ -15,7 +15,7 @@ namespace Spire.Core.Commands.Abstractions.Processing.Contexts
     public interface ICommandContext<TEntity> : IHandlerContext<TEntity>
     {
         IEnumerable<ICommandParameterValue> GetParameters();
-        
+
         /// <summary>
         /// Gets parameter value by the specified argument name.
         /// </summary>

@@ -1,5 +1,9 @@
-﻿using System;
+﻿#region
+
+using System;
 using Spire.Core.Commands.Parsing.Abstractions.Parameters.Options;
+
+#endregion
 
 namespace Spire.Core.Commands.Parsing.Parameters.Options
 {
@@ -12,7 +16,7 @@ namespace Spire.Core.Commands.Parsing.Parameters.Options
         /// Command parameter option name.
         /// </summary>
         public string Name { get; }
-        
+
         /// <summary>
         /// Command parameter option value.
         /// </summary>

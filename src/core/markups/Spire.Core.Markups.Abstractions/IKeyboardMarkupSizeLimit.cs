@@ -14,7 +14,7 @@
         /// Max columns count.
         /// </summary>
         int Columns { get; }
-        
+
         /// <summary>
         /// Max rows count.
         /// </summary>

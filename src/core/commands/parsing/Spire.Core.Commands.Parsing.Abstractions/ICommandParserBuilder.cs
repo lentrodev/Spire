@@ -1,6 +1,10 @@
-﻿using System;
+﻿#region
+
+using System;
 using Spire.Core.Commands.Parsing.Abstractions.Parameters;
 using Spire.Core.Commands.Parsing.Abstractions.Parameters.Options;
+
+#endregion
 
 namespace Spire.Core.Commands.Parsing.Abstractions
 {

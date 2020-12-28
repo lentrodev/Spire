@@ -16,7 +16,6 @@ namespace Spire
             IEnumerable<IActivatedUpdateEntityHandlerDescriptor<PositionedEntityHandlerAttribute>>
                 unOrchestratedEntityHandlersDescriptors)
         {
-            
             return unOrchestratedEntityHandlersDescriptors.OrderBy(x => x.Attribute.Position);
         }
     }
