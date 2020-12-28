@@ -1,6 +1,7 @@
 ﻿#region
 
 using Serilog;
+using Spire.Core.Commands.Parsing;
 using Spire.Examples.Shared;
 using Spire.Hosting.Console;
 #endregion
@@ -11,6 +12,7 @@ namespace Spire.Examples.Console
     {
         static void Main(string[] args)
         {
+            
             ConfigureLogging();
 
             ConsoleBotHostBuilder consoleBotHostBuilder = ConsoleBotHostBuilder
