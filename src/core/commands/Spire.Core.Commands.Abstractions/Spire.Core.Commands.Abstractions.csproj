@@ -6,6 +6,7 @@
 
     <ItemGroup>
       <ProjectReference Include="..\..\Spire.Core.Abstractions\Spire.Core.Abstractions.csproj" />
+      <ProjectReference Include="..\parsing\Spire.Core.Commands.Parsing.Abstractions\Spire.Core.Commands.Parsing.Abstractions.csproj" />
     </ItemGroup>
 
     <ItemGroup>

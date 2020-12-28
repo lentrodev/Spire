@@ -6,11 +6,12 @@
 
     <ItemGroup>
       <ProjectReference Include="..\..\Spire.Core\Spire.Core.csproj" />
+      <ProjectReference Include="..\parsing\Spire.Core.Commands.Parsing.Abstractions\Spire.Core.Commands.Parsing.Abstractions.csproj" />
       <ProjectReference Include="..\Spire.Core.Commands.Abstractions\Spire.Core.Commands.Abstractions.csproj" />
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0" PrivateAssets="All"/>
+        <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0" PrivateAssets="All" />
     </ItemGroup>
 
 </Project>
