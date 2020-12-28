@@ -1,11 +1,13 @@
-﻿#region
-
-using System;
+﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Linq;
 using System.Text.RegularExpressions;
 using Spire.Core.Commands.Parsing.Abstractions;
-
-#endregion
+using Spire.Core.Commands.Parsing.Abstractions.Parameters;
+using Spire.Core.Commands.Parsing.Abstractions.Parameters.Options;
+using Spire.Core.Commands.Parsing.Parameters;
+using Spire.Core.Commands.Parsing.Parameters.Options;
 
 namespace Spire.Core.Commands.Parsing
 {
@@ -14,251 +16,307 @@ namespace Spire.Core.Commands.Parsing
     /// </summary>
     public class CommandParser : ICommandParser
     {
-        private Regex _regex;
+        #region Public Properties
 
         /// <summary>
-        /// Creates new <see cref="CommandParser"/> with specified parameters.
+        /// Command parser configuration.
         /// </summary>
-        /// <param name="commandFormat">Command format.</param>
-        /// <param name="variableStartChar">Variable start char.</param>
-        /// <param name="variableEndChar">Variable end char.</param>
-        /// <param name="variableTypes">Allowed variable types.</param>
-        /// <param name="optionsHandlers">Options handlers.</param>
-        /// <param name="defaultVariableType">Default variable type.</param>
-        /// <exception cref="ArgumentNullException">Throws, if some parameters is null or empty.</exception>
-        /// <exception cref="ArgumentException">Throws, if some parameters is null or empty.</exception>
-        public CommandParser(
-            string commandFormat,
-            string variableStartChar,
-            string variableEndChar,
-            IReadOnlyDictionary<string, IVariableType> variableTypes,
-            IReadOnlyDictionary<string, Func<string, string, bool>> optionsHandlers,
-            IVariableType defaultVariableType)
+        public ICommandParserConfiguration Configuration { get; }
+        
+        /// <summary>
+        /// Collection of command parameter option handlers.
+        /// </summary>
+        public IEnumerable<ICommandParameterOptionHandler> OptionHandlers { get; }
+
+        /// <summary>
+        /// Collection of command parameter types.
+        /// </summary>
+        public IEnumerable<ICommandParameterType> Types { get; }
+
+        /// <summary>
+        /// Command parameter pattern.
+        /// </summary>
+        public string ParameterPattern { get; }
+
+        /// <summary>
+        /// Command parameter option pattern.
+        /// </summary>
+        public string ParameterOptionPattern { get; }
+        
+        #endregion
+        
+        #region RegEx pattern templates 
+        
+        private readonly string ParameterTemplatePattern
+            = "[{0}](?<Name>[A-Za-z0-9_-]+)([{2}](?<Type>\\w+))?([{2}](?<IsOptional>(optional|true)))?([{3}](?<Options>[^{0}{1}{2}{3}]+))?[{1}]";
+
+        private readonly string ParameterOptionTemplatePattern = "(?<Name>[A-Za-z0-9_-]+)[{0}](?<Value>[^{0}{2}{1}]*)";
+
+        private readonly string ParameterRegexTemplatePattern = "(?<{0}>{1})";
+
+        #endregion
+        
+        #region Public methods and constructors
+        
+        /// <summary>
+        /// Creates new <see cref="CommandParser"/> with specified configuration, types, and option handlers.
+        /// </summary>
+        /// <param name="commandParserConfiguration">Configuration.</param>
+        /// <param name="parameterTypes">Parameter types.</param>
+        /// <param name="optionsHandlers">Option handlers.</param>
+        /// <exception cref="InvalidOperationException">If parameter types or option handlers contains duplicates.</exception>
+        public CommandParser(ICommandParserConfiguration commandParserConfiguration,
+            IEnumerable<ICommandParameterType> parameterTypes,
+            IEnumerable<ICommandParameterOptionHandler> optionsHandlers)
         {
-            if (string.IsNullOrWhiteSpace(commandFormat))
-            {
-                throw new ArgumentNullException(nameof(commandFormat));
-            }
+            Configuration = commandParserConfiguration ?? throw new ArgumentNullException(nameof(commandParserConfiguration));
+            OptionHandlers = optionsHandlers ?? throw new ArgumentNullException(nameof(optionsHandlers));
+            Types = parameterTypes ?? throw new ArgumentNullException(nameof(parameterTypes));
 
-            if (string.IsNullOrWhiteSpace(variableStartChar))
-            {
-                throw new ArgumentNullException(nameof(variableStartChar));
-            }
+            IEnumerable<string> optionHandlersDuplicates =
+                FindDuplicates(OptionHandlers, handler => handler.Name).ToList();
 
-            if (string.IsNullOrWhiteSpace(variableEndChar))
+            if (optionHandlersDuplicates.Any())
             {
-                throw new ArgumentNullException(nameof(variableStartChar));
+                throw new InvalidOperationException($"There are duplicated command parameter option handlers with these names: {string.Join(", ", optionHandlersDuplicates.Select(duplicate => $"'{duplicate}'"))}");
             }
+            
+            IEnumerable<string> parameterTypesDuplicates =
+                FindDuplicates(Types, handler => handler.Name).ToList();
 
-            if (variableTypes.Count == 0)
+            if (parameterTypesDuplicates.Any())
             {
-                throw new ArgumentException(nameof(variableTypes), "Variable types collection is empty");
+                throw new InvalidOperationException($"There are duplicated command parameter types with these names: {string.Join(", ", parameterTypesDuplicates.Select(duplicate => $"'{duplicate}'"))}");
             }
+            
+            
+            ParameterPattern = string.Format(
+                ParameterTemplatePattern,
+                Configuration.ParameterStartToken,
+                Configuration.ParameterEndToken,
+                Configuration.ParameterSettingsDelimiter,
+                Configuration.OptionsStartToken);
 
-            if (defaultVariableType == default)
-            {
-                throw new ArgumentNullException(nameof(defaultVariableType));
-            }
-
-            CommandFormat = commandFormat;
-            VariableTypes = variableTypes;
-            DefaultVariableType = defaultVariableType;
-            VariableStartChar = variableStartChar;
-            VariableEndChar = variableEndChar;
-            OptionsHandlers = optionsHandlers;
-            ParseCommandFormat();
+            ParameterOptionPattern = string.Format(ParameterOptionTemplatePattern,
+                Configuration.OptionNameValueDelimiter,
+                Configuration.ParameterStartToken,
+                Configuration.OptionsDelimiter
+            );
         }
 
-        // the 0 and 1 are used by the string.Format function, they are the start and end characters.
-        private static readonly string CommandTokenPattern =
-            @"[{0}](?<variable>[a-zA-Z0-9_]+?)(:(?<type>[a-z]+?))?(:(?<optional>[a-z]+?))?(:(?<options>[^{0}]+))?[{1}]";
-
-        // the <>'s denote the group name; this is used for reference for the variables later.
-        private static readonly string VariableTokenPattern = @"(?<{0}>{1})";
-
         /// <summary>
-        /// Parser command format.
+        /// Parses <see cref="ICommandFormat"/>.
         /// </summary>
-        public string CommandFormat { get; }
-
-        /// <summary>
-        /// Default variable type.
-        /// </summary>
-        public IVariableType DefaultVariableType { get; }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public IReadOnlyDictionary<string, Func<string, string, bool>> OptionsHandlers { get; }
-
-        /// <summary>
-        /// Collection of variable types could be used.
-        /// </summary>
-        public IReadOnlyDictionary<string, IVariableType> VariableTypes { get; }
-
-        /// <summary>
-        /// This is the character that denotes the beginning of a variable name.
-        /// </summary>
-        public string VariableStartChar { get; }
-
-        /// <summary>
-        /// This is the character that denotes the end of a variable name.
-        /// </summary>
-        public string VariableEndChar { get; }
-
-        /// <summary>
-        /// A hash set of all variable names parsed from the <see cref="CommandFormat"/>
-        /// </summary>
-        public IReadOnlyList<IVariable> Variables { get; private set; }
-
-        /// <summary>
-        /// Parses command.
-        /// </summary>
-        /// <param name="source">Command parsing source.</param>
-        /// <returns>Command parser result.</returns>
-        public ICommandParserResult ParseCommand(string source)
+        /// <param name="formatSource">Command format source text.</param>
+        /// <returns>Parsed command format.</returns>
+        public ICommandFormat ParseCommandFormat(string formatSource)
         {
-            Dictionary<string, string> variables = new Dictionary<string, string>();
+            Regex parameterRegex = new Regex(ParameterPattern);
 
-            string commandExpression = CommandFormat.Replace(" ", @"\s*");
+            ICollection<ICommandParameter> commandParameters = new Collection<ICommandParameter>();
 
-            foreach (var variable in Variables)
+            foreach (Match parameterMatch in parameterRegex.Matches(formatSource))
             {
-                commandExpression = commandExpression.Replace(variable.OriginalPattern,
-                    $"(?<{variable.Name}>" + variable.Type.Pattern + ")" + (variable.IsOptional ? "?" : ""));
+                GroupCollection parameterGroups = parameterMatch.Groups;
+
+                string parameterName = parameterGroups["Name"].Value;
+
+                Group typeGroup = parameterGroups["Type"];
+
+                ICommandParameterType parameterType = null;
+
+                if (typeGroup.Success)
+                {
+                    foreach (ICommandParameterType type in Types)
+                    {
+                        if (string.Compare(type.Name, typeGroup.Value, StringComparison.Ordinal) == 0)
+                        {
+                            parameterType = type;
+                        }
+                    }
+
+                    if (parameterType == null)
+                    {
+                        throw new InvalidOperationException(
+                            $"You have specified invalid command parameter type: {typeGroup.Value}.");
+                    }
+                }
+                else
+                {
+                    parameterType = Types.First();
+                }
+
+                bool isOptional = parameterGroups["IsOptional"].Success;
+
+                IEnumerable<ICommandParameterOption> commandParameterOptions =
+                    Enumerable.Empty<ICommandParameterOption>();
+
+                Group optionsGroup = parameterGroups["Options"];
+                if (optionsGroup.Success)
+                {
+                    commandParameterOptions = ParseOptions(optionsGroup.Value);
+                }
+
+                ICommandParameter commandParameter = new CommandParameter(
+                    parameterMatch.Value,
+                    parameterName,
+                    parameterType,
+                    isOptional,
+                    commandParameterOptions);
+
+                commandParameters.Add(commandParameter);
             }
 
-            var smatch = Regex.Match(source, commandExpression, RegexOptions.IgnoreCase);
+            return new CommandFormat(formatSource, commandParameters);
+        }
 
-            bool successParsing = smatch.Success;
+        /// <summary>
+        /// Parses command according to provided <paramref name="commandFormat"></paramref>.
+        /// </summary>
+        /// <param name="commandFormat">Command format.</param>
+        /// <param name="source">Command text.</param>
+        /// <returns>Command parser result.</returns>
+        public ICommandParserResult Parse(ICommandFormat commandFormat, string source)
+        {
+            string commandPattern = GetCommandPattern(commandFormat);
 
-            Dictionary<string, string> unparsedVariables = new Dictionary<string, string>();
+            Regex commandRegex = new Regex(commandPattern);
 
-            bool success = true;
-            
-            foreach (var variable in Variables)
+            ICollection<ICommandParameterValue> values = new Collection<ICommandParameterValue>();
+            ICollection<ICommandParameter> wrongParameters = new Collection<ICommandParameter>();
+
+            Match commandMatch = commandRegex.Match(source);
+
+            GroupCollection commandGroups = commandMatch.Groups;
+
+            bool commandMatchResult = commandMatch.Success;
+
+            foreach (ICommandParameter commandParameter in commandFormat.Parameters)
             {
-                string variableValue = smatch.Groups?[variable.Name]?.Value ?? "";
+                Group commandParameterGroup = commandGroups[commandParameter.Name];
 
-                foreach (KeyValuePair<string, string> option in variable.Options)
+                if (!commandParameterGroup.Success && !commandParameter.IsOptional)
                 {
-                    if (OptionsHandlers.ContainsKey(option.Key))
+                    commandMatchResult = false;
+                    wrongParameters.Add(commandParameter);
+                    continue;
+                }
+
+                string commandParameterValue = commandParameterGroup.Value;
+
+                bool optionsMatchResult = true;
+
+                foreach (ICommandParameterOption commandParameterOption in commandParameter.Options)
+                {
+                    foreach (ICommandParameterOptionHandler commandParameterOptionHandler in OptionHandlers)
                     {
-                        bool optionResult = OptionsHandlers[option.Key].Invoke(variableValue, option.Value);
-                        if (!optionResult)
-                            successParsing = false;
+                        if (string.Compare(commandParameterOption.Name, commandParameterOptionHandler.Name,
+                            StringComparison.Ordinal) == 0)
+                        {
+                            if (!(optionsMatchResult =
+                                commandParameterOptionHandler.IsMatch(commandParameterOption.Value,
+                                    commandParameterValue)))
+                            {
+                                break;
+                            }
+                        }
+                    }
+
+                    if (!optionsMatchResult)
+                    {
+                        break;
                     }
                 }
 
-                if (successParsing)
-                    variables.Add(variable.Name, variableValue);
+                if (optionsMatchResult)
+                {
+                    values.Add(new CommandParameterValue(
+                        commandParameter,
+                        commandParameterGroup.Value));
+                }
+                else if(!commandParameter.IsOptional)
+                {
+                    commandMatchResult = false;
+                    wrongParameters.Add(commandParameter);
+                }
+            }
+
+            if (commandMatchResult)
+            {
+                return CommandParserResult.Success(commandFormat, source, values);
+            }
+
+            return CommandParserResult.Fail(commandFormat, source, wrongParameters);
+        }
+
+        #endregion
+        
+        #region Private methods
+        
+        private IEnumerable<ICommandParameterOption> ParseOptions(string optionsSource)
+        {
+            Regex optionRegex = new Regex(ParameterOptionPattern);
+
+            string[] options =
+                optionsSource.Split(Configuration.OptionsDelimiter, StringSplitOptions.RemoveEmptyEntries);
+
+            foreach (string option in options)
+            {
+                Match optionMatch = optionRegex.Match(option);
+
+                if (optionMatch.Success)
+                {
+                    GroupCollection optionGroups = optionMatch.Groups;
+
+                    string name = optionGroups["Name"].Value;
+                    string value = optionGroups["Value"].Value;
+
+                    if (!OptionHandlers.Any(optionHandler => string.Compare(optionHandler.Name, name, StringComparison.Ordinal) != 0))
+                    {
+                        throw new InvalidOperationException($"There is no option handler for '{name}' option.");
+                    }
+                    
+                    yield return new CommandParameterOption(name, value);
+                }
                 else
                 {
-                    success = false;
-                    unparsedVariables.Add(variable.Name, variableValue);
+                    throw new InvalidOperationException($"Invalid command parameter option format: {option}.");
                 }
             }
-
-            return (successParsing && success)
-                ? CommandParserResult.Success(variables, CommandFormat)
-                : CommandParserResult.Failure(unparsedVariables, CommandFormat);
-        }
-
-        private void ParseCommandFormat()
+        }   
+        
+        private string GetCommandPattern(ICommandFormat commandFormat)
         {
-            var variableList = new List<IVariable>();
-            var matchCollection = Regex.Matches(
-                CommandFormat,
-                string.Format(CommandTokenPattern, VariableStartChar, VariableEndChar),
-                RegexOptions.IgnoreCase);
+            string commandRegex = commandFormat.Format;
 
-            foreach (Match match in matchCollection)
+            foreach (ICommandParameter commandParameter in commandFormat.Parameters)
             {
-                var variable = CreateVariable(match);
-
-                if (variableList.Contains(variable))
-                {
-                    throw new InvalidOperationException($"Variable name '{match}' is used more than once");
-                }
-
-                variableList.Add(variable);
+                commandRegex = commandRegex.Replace(commandParameter.Format,
+                    string.Format(ParameterRegexTemplatePattern, commandParameter.Name, commandParameter.Type.Pattern) + "?");
             }
 
-            Variables = variableList.AsReadOnly();
+            string whitespacePattern = "\\s*";
 
-            var format = CommandFormat;
-
-            foreach (var variable in Variables)
+            if (Configuration.ReplaceWhitespaceWithPattern)
             {
-                format = format.Replace(
-                    variable.OriginalPattern,
-                    string.Format(
-                        VariableTokenPattern,
-                        variable.Name,
-                        variable.Type.Pattern
-                    )
-                );
+                commandRegex = commandRegex.Replace(" ", whitespacePattern);
             }
 
-            _regex = new Regex($"^{format}$", RegexOptions.IgnoreCase);
+            commandRegex = commandRegex + "(.*)";
+
+            commandRegex = $"^{commandRegex}$";
+            
+            return commandRegex;
         }
-
-        /// <summary>
-        /// Extract variable values from a given instance of the command you're trying to parse.
-        /// </summary>
-        /// <param name="match">Variable match.</param>
-        /// <returns>An instance of <see cref="CommandParserResult"/> indicating success or failure with a dictionary of Variable names mapped to values if success.</returns>
-        private Variable CreateVariable(Match match)
+        
+        private IEnumerable<TKey> FindDuplicates<T, TKey>(IEnumerable<T> enumeration, Func<T, TKey> keySelector)
         {
-            if (!match.Groups["variable"].Success)
-            {
-                throw new InvalidOperationException();
-            }
-
-            IVariableType variableType;
-
-            var variableTypeName = match.Groups["type"].Success
-                ? match.Groups["type"].Value
-                : null;
-            bool autoType = false;
-            if (string.IsNullOrWhiteSpace(variableTypeName))
-            {
-                variableType = DefaultVariableType;
-                autoType = true;
-            }
-            else if (VariableTypes.ContainsKey(variableTypeName))
-            {
-                variableType = VariableTypes[variableTypeName];
-            }
-            else
-            {
-                throw new InvalidOperationException($"Invalid variable type '{variableTypeName}'");
-            }
-
-            var variableName = match.Groups["variable"].Value;
-
-            bool isOptional = false;
-            if (match.Groups["optional"] != null)
-            {
-                bool.TryParse(match.Groups["optional"].Value, out isOptional);
-            }
-
-            string optionsString = match.Groups["options"].Value;
-
-            IDictionary<string, string> optionsDictionary = new Dictionary<string, string>();
-
-            if (!string.IsNullOrEmpty(optionsString))
-            {
-                string[] options = optionsString.Split(';', StringSplitOptions.RemoveEmptyEntries);
-
-                foreach (string option in options)
-                {
-                    string[] optionParts = option.Split("=");
-                    optionsDictionary.Add(optionParts[0], optionParts[1]);
-                }
-            }
-
-            return new Variable(variableName, match.Value, variableType, isOptional, autoType, optionsDictionary);
+            return enumeration
+                .GroupBy(keySelector)
+                .Where(grouping => grouping.Count() > 1)
+                .Select(duplicate => duplicate.Key);
         }
+        
+        #endregion
     }
 }

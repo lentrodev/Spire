@@ -1,11 +1,11 @@
-﻿#region
-
-using System;
+﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Linq;
 using Spire.Core.Commands.Parsing.Abstractions;
-using Spire.Core.Commands.Parsing.VariableTypes;
-
-#endregion
+using Spire.Core.Commands.Parsing.Abstractions.Parameters;
+using Spire.Core.Commands.Parsing.Abstractions.Parameters.Options;
+using Spire.Core.Commands.Parsing.Parameters;
 
 namespace Spire.Core.Commands.Parsing
 {
@@ -14,200 +14,173 @@ namespace Spire.Core.Commands.Parsing
     /// </summary>
     public class CommandParserBuilder : ICommandParserBuilder
     {
-        private readonly IDictionary<string, IVariableType> _variableTypes =
-            new Dictionary<string, IVariableType>();
-
-        private string _variableStartChar;
-        private string _variableEndChar;
-        private string _commandFormat;
-
-        private readonly Dictionary<string, Func<string, string, bool>> _optionsHandlers;
-
-        private IVariableType _defaultVariableType;
-
         /// <summary>
-        /// Creates new command parser builder.
+        /// Creates new <see cref="ICommandParserBuilder"/>.
         /// </summary>
-        public CommandParserBuilder()
+        public static ICommandParserBuilder New => new CommandParserBuilder(); 
+        
+        private readonly ICollection<ICommandParameterType> _commandParameterTypes;
+        private readonly ICollection<ICommandParameterOptionHandler> _commandParameterOptionHandlers;
+        private ICommandParserConfiguration _commandParserConfiguration;
+        
+        private CommandParserBuilder()
         {
-            _optionsHandlers = new Dictionary<string, Func<string, string, bool>>();
+            _commandParameterTypes = new Collection<ICommandParameterType>();
+            _commandParameterOptionHandlers = new Collection<ICommandParameterOptionHandler>();
         }
-
+        
         /// <summary>
-        /// Sets default variable type.
+        /// Sets default command parser settings.
         /// </summary>
-        /// <typeparam name="TVariableType">Variable type.</typeparam>
-        /// <returns>Configured command parser builder instance.</returns>
-        public ICommandParserBuilder WithDefaultType<TVariableType>()
-            where TVariableType : IVariableType, new()
-        {
-            var variableType = Activator.CreateInstance<TVariableType>();
-            return WithDefaultType(variableType);
-        }
-
-        /// <summary>
-        /// Sets default variable type. 
-        /// </summary>
-        /// <param name="variableType"></param>
-        /// <returns>Configured command parser builder instance.</returns>
-        public ICommandParserBuilder WithDefaultType(IVariableType variableType)
-        {
-            _defaultVariableType = variableType ?? throw new ArgumentNullException(nameof(variableType));
-            return this;
-        }
-
-        /// <summary>
-        /// Sets default variable type.
-        /// </summary>
-        /// <param name="name">Variable type name.</param>
-        /// <returns>Configured command parser builder instance.</returns>
-        public ICommandParserBuilder WithDefaultType(string name)
-        {
-            if (!_variableTypes.ContainsKey(name))
-            {
-                throw new ArgumentOutOfRangeException(nameof(name), name, $"No variable type named '{name}'");
-            }
-
-            _defaultVariableType = _variableTypes[name];
-            return this;
-        }
-
-        /// <summary>
-        /// Add new variable type.
-        /// </summary>
-        /// <typeparam name="TVariableType"></typeparam>
-        /// <returns>Configured command parser builder instance.</returns>
-        public ICommandParserBuilder WithVariableType<TVariableType>()
-            where TVariableType : IVariableType, new()
-        {
-            var variableType = Activator.CreateInstance<TVariableType>();
-            return WithVariableType(variableType);
-        }
-
-        /// <summary>
-        /// Add new variable type. 
-        /// </summary>
-        /// <param name="variableType"></param>
-        /// <returns>Configured command parser builder instance.</returns>
-        public ICommandParserBuilder WithVariableType(IVariableType variableType)
-        {
-            if (variableType == null)
-            {
-                throw new ArgumentNullException(nameof(variableType));
-            }
-
-            _variableTypes[variableType.Name] = variableType;
-            return this;
-        }
-
-        /// <summary>
-        /// Sets variable delimiters.
-        /// </summary>
-        /// <param name="start">Start delimiter.</param>
-        /// <param name="end">End delimiter.</param>
-        /// <returns>Configured command parser builder instance.</returns>
-        public ICommandParserBuilder WithVariableDelimiters(string start, string end)
-        {
-            _variableStartChar = start;
-            _variableEndChar = end;
-            return this;
-        }
-
-        /// <summary>
-        /// Sets default values for the builder.
-        /// </summary>
-        /// <returns>Configured command parser builder instance.</returns>
+        /// <returns>Configured <see cref="ICommandParserBuilder"/> instance.</returns>
         public ICommandParserBuilder WithDefaults()
         {
-            return WithVariableDelimiters("{", "}")
-                .WithVariableType<StringVariableType>()
-                .WithVariableType<NumberVariableType>()
-                .WithVariableType<DoubleVariableType>()
-                .WithVariableType<BoolVariableType>()
-                .WithDefaultType("string");
+            _commandParserConfiguration = CommandParserConfiguration.Default;
+            
+            _commandParameterTypes.Clear();
+            
+            foreach (ICommandParameterType commandParameterType in CommandParameterTypes.All)
+            {
+                _commandParameterTypes.Add(commandParameterType);
+            }
+            
+            return this;
         }
 
         /// <summary>
-        /// Sets command format.
+        /// Overrides default settings.
         /// </summary>
-        /// <param name="commandFormat">Command format.</param>
-        /// <returns>Configured command parser builder instance.</returns>
-        public ICommandParserBuilder WithCommandFormat(string commandFormat)
+        /// <param name="defaultsOverriderConfigurator">Overrider configurator.</param>
+        /// <returns>Configured <see cref="ICommandParserBuilder"/> instance.</returns>
+        public ICommandParserBuilder WithOverridenDefaults(Action<ICommandParserConfiguration> defaultsOverriderConfigurator)
         {
-            if (string.IsNullOrWhiteSpace(commandFormat))
+            _commandParserConfiguration ??= CommandParserConfiguration.Default;
+
+            if (defaultsOverriderConfigurator == null)
             {
-                throw new ArgumentNullException(nameof(commandFormat));
+                throw new ArgumentNullException(nameof(defaultsOverriderConfigurator));
+            }
+            
+            defaultsOverriderConfigurator(_commandParserConfiguration);
+
+            return this;
+        }
+
+        /// <summary>
+        /// Sets command parser configuration. 
+        /// </summary>
+        /// <param name="commandParserConfiguration">Command parser configuration.</param>
+        /// <returns>Configured <see cref="ICommandParserBuilder"/> instance.</returns>
+        public ICommandParserBuilder WithConfiguration(ICommandParserConfiguration commandParserConfiguration)
+        {
+            _commandParserConfiguration = commandParserConfiguration ?? throw new ArgumentNullException(nameof(commandParserConfiguration));
+
+            return this;
+        }
+
+        /// <summary>
+        /// Adds parameter type.
+        /// </summary>
+        /// <param name="commandParameterType">Parameter type.</param>
+        /// <returns>Configured <see cref="ICommandParserBuilder"/> instance.</returns>
+        public ICommandParserBuilder WithParameterType(ICommandParameterType commandParameterType)
+        {
+            if (commandParameterType == null)
+            {
+                throw new ArgumentNullException(nameof(commandParameterType));
             }
 
-            _commandFormat = commandFormat;
+            if (_commandParameterTypes.Any(existingCommandParameterType =>
+                string.Compare(existingCommandParameterType.Name, commandParameterType.Name, StringComparison.Ordinal) == 0))
+            {
+                throw new ArgumentException(
+                    $"Specified command parameter type '{commandParameterType.Name}' already exists.", nameof(commandParameterType));
+            }
+            
+            _commandParameterTypes.Add(commandParameterType);
+
             return this;
         }
 
         /// <summary>
-        /// Adds variable option handler.
+        /// Adds parameter type. 
         /// </summary>
-        /// <param name="optionName">Option name.</param>
-        /// <param name="optionHandler">Option handler func.</param>
-        /// <returns>Configured command parser builder instance.</returns>
-        public ICommandParserBuilder WithOptionHandler(string optionName, Func<string, string, bool> optionHandler)
+        /// <param name="commandParameterType">Parameter type instance.</param>
+        /// <typeparam name="TCommandParameterType">Parameter type.</typeparam>
+        /// <returns>Configured <see cref="ICommandParserBuilder"/> instance.</returns>
+        public ICommandParserBuilder WithParameterType<TCommandParameterType>(TCommandParameterType commandParameterType) where TCommandParameterType : class, ICommandParameterType
         {
-            _optionsHandlers.Add(optionName, optionHandler);
+            return WithParameterType(commandParameterType as ICommandParameterType);
+        }
+
+        /// <summary>
+        /// Adds parameter type.
+        /// </summary>
+        /// <typeparam name="TCommandParameterType">Parameter type.</typeparam>
+        /// <returns>Configured <see cref="ICommandParserBuilder"/> instance.</returns>
+        public ICommandParserBuilder WithParameterType<TCommandParameterType>() where TCommandParameterType : class, ICommandParameterType, new()
+        {
+            return WithParameterType(new TCommandParameterType());
+        }
+
+        /// <summary>
+        /// Adds parameter option handler.
+        /// </summary>
+        /// <param name="commandParameterOptionHandler">Command parameter option handler.</param>
+        /// <returns>Configured <see cref="ICommandParserBuilder"/> instance.</returns>
+        public ICommandParserBuilder WithParameterOptionHandler(ICommandParameterOptionHandler commandParameterOptionHandler)
+        {
+            if (commandParameterOptionHandler == null)
+            {
+                throw new ArgumentNullException(nameof(commandParameterOptionHandler));
+            }
+            
+            if(_commandParameterOptionHandlers.Any(existingCommandParameterHandler => string.Compare(existingCommandParameterHandler.Name, commandParameterOptionHandler.Name, StringComparison.Ordinal) == 0))
+            {
+                throw new ArgumentException(
+                    $"Specified command parameter option handler '{commandParameterOptionHandler.Name}' already exists.", nameof(commandParameterOptionHandler));
+            }
+            
+            _commandParameterOptionHandlers.Add(commandParameterOptionHandler);
 
             return this;
         }
 
         /// <summary>
-        /// Builds new <see cref="CommandParser"/>.
+        /// Adds parameter option handler.
         /// </summary>
-        /// <returns>Built <see cref="CommandParser"/>.</returns>
-        /// <exception cref="InvalidOperationException">Some required values aren't set.</exception>
+        /// <param name="commandParameterOptionHandler">Command parameter option handler.</param>
+        /// <typeparam name="TCommandParameterOptionHandler">Command parameter option handler type.</typeparam>
+        /// <returns>Configured <see cref="ICommandParserBuilder"/> instance.</returns>
+        public ICommandParserBuilder WithParameterOptionHandler<TCommandParameterOptionHandler>(
+            TCommandParameterOptionHandler commandParameterOptionHandler) where TCommandParameterOptionHandler : class, ICommandParameterOptionHandler
+        {
+            return WithParameterOptionHandler(commandParameterOptionHandler as ICommandParameterOptionHandler);
+        }
+
+        /// <summary>
+        /// Adds parameter option handler.
+        /// </summary>
+        /// <typeparam name="TCommandParameterOptionHandler">Command parameter option handler type.</typeparam>
+        /// <returns>Configured <see cref="ICommandParserBuilder"/> instance.</returns>
+        public ICommandParserBuilder WithParameterOptionHandler<TCommandParameterOptionHandler>() where TCommandParameterOptionHandler : class, ICommandParameterOptionHandler, new()
+        {
+            return WithParameterOptionHandler(new TCommandParameterOptionHandler());
+        }
+
+        /// <summary>
+        /// Builds <see cref="ICommandParser"/> with specified settings.
+        /// </summary>
+        /// <returns>Built <see cref="ICommandParser"/> instance.</returns>
         public ICommandParser Build()
         {
-            if (string.IsNullOrWhiteSpace(_commandFormat))
+            if (_commandParserConfiguration == null && !_commandParameterTypes.Any())
             {
-                throw new InvalidOperationException("Command format is not set");
+                WithDefaults();
             }
-
-            if (string.IsNullOrWhiteSpace(_variableStartChar))
-            {
-                throw new InvalidOperationException("Start variable character is not set");
-            }
-
-            if (string.IsNullOrWhiteSpace(_variableStartChar))
-            {
-                throw new InvalidOperationException("End variable character is not set");
-            }
-
-            if (_variableTypes.Count == 0)
-            {
-                throw new InvalidOperationException("Variable types is empty");
-            }
-
-            if (_defaultVariableType == null)
-            {
-                throw new InvalidOperationException("Default variable type is not set");
-            }
-
-            var variableTypes = new Dictionary<string, IVariableType>();
-
-            foreach (var variableType in _variableTypes)
-            {
-                if (variableType.Value == null)
-                {
-                    throw new InvalidOperationException($"'{variableType}' variable type is not set");
-                }
-
-                variableTypes[variableType.Key] = variableType.Value;
-            }
-
-            return new CommandParser(
-                _commandFormat,
-                _variableStartChar,
-                _variableEndChar,
-                variableTypes,
-                _optionsHandlers,
-                _defaultVariableType
-            );
+            
+            return new CommandParser(_commandParserConfiguration, _commandParameterTypes,
+                _commandParameterOptionHandlers);
         }
     }
 }

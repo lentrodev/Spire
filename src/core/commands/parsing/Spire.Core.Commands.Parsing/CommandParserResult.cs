@@ -1,9 +1,9 @@
-﻿#region
-
+﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using Spire.Core.Commands.Parsing.Abstractions;
-
-#endregion
+using Spire.Core.Commands.Parsing.Abstractions.Parameters;
+using Spire.Core.Commands.Parsing.Parameters;
 
 namespace Spire.Core.Commands.Parsing
 {
@@ -13,46 +13,62 @@ namespace Spire.Core.Commands.Parsing
     public class CommandParserResult : ICommandParserResult
     {
         /// <summary>
-        /// Parsed variables.
+        /// Indicates, was the parsing successfully completed or not.
         /// </summary>
-        public IReadOnlyDictionary<string, string> Variables { get; }
+        public bool IsSuccess { get; }
 
         /// <summary>
-        /// Indicated parse status.
+        /// Command format, used for parsing parameter values.
         /// </summary>
-        public bool Successful { get; }
+        public ICommandFormat CommandFormat { get; }
 
         /// <summary>
-        /// Command format.
+        /// Source command text, used for parsing command parameter values, according to <see cref="CommandFormat"/>.
         /// </summary>
-        public string CommandFormat { get; }
+        public string CommandText { get; }
 
         /// <summary>
-        /// Creates new failed <see cref="ICommandParserResult"/>.
+        /// Parsed parameters values. If <see cref="IsSuccess"/> is <see langword="false"/>, contains collection of parameters which were unable to parse.
         /// </summary>
-        /// <param name="badValues">Variables, which weren't parsed.</param>
-        /// <param name="commandFormat">Command format.</param>
-        /// <returns>Command parser result.</returns>
-        public static ICommandParserResult Failure(IReadOnlyDictionary<string, string> badValues, string commandFormat)
-            => new CommandParserResult(commandFormat, false, badValues);
-
-        /// <summary>
-        /// Creates new success <see cref="ICommandParserResult"/>.
-        /// </summary>
-        /// <param name="values">Parsed variables.</param>
-        /// <param name="commandFormat">Command format.</param>
-        /// <returns>Command parser result.</returns>
-        public static ICommandParserResult Success(IReadOnlyDictionary<string, string> values, string commandFormat)
-            => new CommandParserResult(commandFormat, true, values);
-
+        public IEnumerable<ICommandParameterValue> Values { get; }
+        
         private CommandParserResult(
-            string commandFormat,
-            bool successful = default,
-            IReadOnlyDictionary<string, string> variables = default)
+            bool isSuccess,
+            ICommandFormat commandFormat,
+            string commandText,
+            IEnumerable<ICommandParameterValue> values)
         {
+            IsSuccess = isSuccess;
             CommandFormat = commandFormat;
-            Variables = variables;
-            Successful = successful;
+            CommandText = commandText;
+            Values = values;
         }
+
+        /// <summary>
+        /// Creates successful <see cref="ICommandParserResult"/>.
+        /// </summary>
+        /// <param name="commandFormat">Command format.</param>
+        /// <param name="commandText">Command text.</param>
+        /// <param name="values">Successfully parsed command parameter values.</param>
+        /// <returns>Successful <see cref="ICommandParserResult"/>.</returns>
+        public static CommandParserResult Success(
+            ICommandFormat commandFormat,
+            string commandText,
+            IEnumerable<ICommandParameterValue> values)
+            => new CommandParserResult(true, commandFormat, commandText, values);
+
+        /// <summary>
+        /// Creates failed <see cref="ICommandParserResult"/>.
+        /// </summary>
+        /// <param name="commandFormat">Command format.</param>
+        /// <param name="commandText">Command text.</param>
+        /// <param name="parameters">Command parameters, which were unable to parse.</param>
+        /// <returns>Failed <see cref="ICommandParserResult"/>.</returns>
+        public static CommandParserResult Fail(
+            ICommandFormat commandFormat,
+            string commandText,
+            IEnumerable<ICommandParameter> parameters)
+            => new CommandParserResult(false, commandFormat, commandText,
+                parameters.Select(wrongParameter => new CommandParameterValue(wrongParameter, null)));
     }
 }

@@ -1,80 +1,87 @@
-﻿#region
-
-using System;
-using Spire.Core.Abstractions.Builders;
-
-#endregion
+﻿using System;
+using Spire.Core.Commands.Parsing.Abstractions.Parameters;
+using Spire.Core.Commands.Parsing.Abstractions.Parameters.Options;
 
 namespace Spire.Core.Commands.Parsing.Abstractions
 {
     /// <summary>
     /// Base interface for implementing command parser builder.
     /// </summary>
-    public interface ICommandParserBuilder : IBuilder<ICommandParser>
+    public interface ICommandParserBuilder
     {
         /// <summary>
-        /// Sets default variable type.
+        /// Sets default command parser settings.
         /// </summary>
-        /// <typeparam name="TVariableType">Variable type.</typeparam>
-        /// <returns>Configured command parser builder instance.</returns>
-        ICommandParserBuilder WithDefaultType<TVariableType>() where TVariableType : IVariableType, new();
-
-        /// <summary>
-        /// Sets default variable type. 
-        /// </summary>
-        /// <param name="variableType"></param>
-        /// <returns>Configured command parser builder instance.</returns>
-        ICommandParserBuilder WithDefaultType(IVariableType variableType);
-
-        /// <summary>
-        /// Sets default variable type.
-        /// </summary>
-        /// <param name="name">Variable type name.</param>
-        /// <returns>Configured command parser builder instance.</returns>
-        ICommandParserBuilder WithDefaultType(string name);
-
-        /// <summary>
-        /// Add new variable type.
-        /// </summary>
-        /// <typeparam name="TVariableType"></typeparam>
-        /// <returns>Configured command parser builder instance.</returns>
-        ICommandParserBuilder WithVariableType<TVariableType>()
-            where TVariableType : IVariableType, new();
-
-        /// <summary>
-        /// Add new variable type. 
-        /// </summary>
-        /// <param name="variableType"></param>
-        /// <returns>Configured command parser builder instance.</returns>
-        ICommandParserBuilder WithVariableType(IVariableType variableType);
-
-        /// <summary>
-        /// Sets variable delimiters.
-        /// </summary>
-        /// <param name="start">Start delimiter.</param>
-        /// <param name="end">End delimiter.</param>
-        /// <returns>Configured command parser builder instance.</returns>
-        ICommandParserBuilder WithVariableDelimiters(string start, string end);
-
-        /// <summary>
-        /// Sets default values for the builder.
-        /// </summary>
-        /// <returns>Configured command parser builder instance.</returns>
+        /// <returns>Configured <see cref="ICommandParserBuilder"/> instance.</returns>
         ICommandParserBuilder WithDefaults();
 
         /// <summary>
-        /// Sets command format.
+        /// Overrides default settings.
         /// </summary>
-        /// <param name="commandFormat">Command format.</param>
-        /// <returns>Configured command parser builder instance.</returns>
-        ICommandParserBuilder WithCommandFormat(string commandFormat);
+        /// <param name="defaultsOverriderConfigurator">Overrider configurator.</param>
+        /// <returns>Configured <see cref="ICommandParserBuilder"/> instance.</returns>
+        ICommandParserBuilder WithOverridenDefaults(Action<ICommandParserConfiguration> defaultsOverriderConfigurator);
 
         /// <summary>
-        /// Adds variable option handler.
+        /// Sets command parser configuration. 
         /// </summary>
-        /// <param name="optionName">Option name.</param>
-        /// <param name="optionHandler">Option handler func.</param>
-        /// <returns>Configured command parser builder instance.</returns>
-        ICommandParserBuilder WithOptionHandler(string optionName, Func<string, string, bool> optionHandler);
+        /// <param name="commandParserConfiguration">Command parser configuration.</param>
+        /// <returns>Configured <see cref="ICommandParserBuilder"/> instance.</returns>
+        ICommandParserBuilder WithConfiguration(ICommandParserConfiguration commandParserConfiguration);
+
+        /// <summary>
+        /// Adds parameter type.
+        /// </summary>
+        /// <param name="commandParameterType">Parameter type.</param>
+        /// <returns>Configured <see cref="ICommandParserBuilder"/> instance.</returns>
+        ICommandParserBuilder WithParameterType(ICommandParameterType commandParameterType);
+
+        /// <summary>
+        /// Adds parameter type. 
+        /// </summary>
+        /// <param name="commandParameterType">Parameter type instance.</param>
+        /// <typeparam name="TCommandParameterType">Parameter type.</typeparam>
+        /// <returns>Configured <see cref="ICommandParserBuilder"/> instance.</returns>
+        ICommandParserBuilder WithParameterType<TCommandParameterType>(TCommandParameterType commandParameterType)
+            where TCommandParameterType : class, ICommandParameterType;
+
+        /// <summary>
+        /// Adds parameter type.
+        /// </summary>
+        /// <typeparam name="TCommandParameterType">Parameter type.</typeparam>
+        /// <returns>Configured <see cref="ICommandParserBuilder"/> instance.</returns>
+        ICommandParserBuilder WithParameterType<TCommandParameterType>()
+            where TCommandParameterType : class, ICommandParameterType, new();
+
+        /// <summary>
+        /// Adds parameter option handler.
+        /// </summary>
+        /// <param name="commandParameterOptionHandler">Command parameter option handler.</param>
+        /// <returns>Configured <see cref="ICommandParserBuilder"/> instance.</returns>
+        ICommandParserBuilder WithParameterOptionHandler(ICommandParameterOptionHandler commandParameterOptionHandler);
+
+        /// <summary>
+        /// Adds parameter option handler.
+        /// </summary>
+        /// <param name="commandParameterOptionHandler">Command parameter option handler.</param>
+        /// <typeparam name="TCommandParameterOptionHandler">Command parameter option handler type.</typeparam>
+        /// <returns>Configured <see cref="ICommandParserBuilder"/> instance.</returns>
+        ICommandParserBuilder WithParameterOptionHandler<TCommandParameterOptionHandler>(
+            TCommandParameterOptionHandler commandParameterOptionHandler)
+            where TCommandParameterOptionHandler : class, ICommandParameterOptionHandler;
+
+        /// <summary>
+        /// Adds parameter option handler.
+        /// </summary>
+        /// <typeparam name="TCommandParameterOptionHandler">Command parameter option handler type.</typeparam>
+        /// <returns>Configured <see cref="ICommandParserBuilder"/> instance.</returns>
+        ICommandParserBuilder WithParameterOptionHandler<TCommandParameterOptionHandler>()
+            where TCommandParameterOptionHandler : class, ICommandParameterOptionHandler, new();
+
+        /// <summary>
+        /// Builds <see cref="ICommandParser"/> with specified settings.
+        /// </summary>
+        /// <returns>Built <see cref="ICommandParser"/> instance.</returns>
+        ICommandParser Build();
     }
 }

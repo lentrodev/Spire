@@ -1,8 +1,5 @@
-﻿#region
-
-using System.Collections.Generic;
-
-#endregion
+﻿using System.Collections.Generic;
+using Spire.Core.Commands.Parsing.Abstractions.Parameters;
 
 namespace Spire.Core.Commands.Parsing.Abstractions
 {
@@ -12,18 +9,23 @@ namespace Spire.Core.Commands.Parsing.Abstractions
     public interface ICommandParserResult
     {
         /// <summary>
-        /// Parsed variables.
+        /// Indicates, was the parsing successfully completed or not.
         /// </summary>
-        IReadOnlyDictionary<string, string> Variables { get; }
+        bool IsSuccess { get; }
 
         /// <summary>
-        /// Indicated parse status.
+        /// Command format, used for parsing parameter values.
         /// </summary>
-        bool Successful { get; }
-
+        ICommandFormat CommandFormat { get; }   
+        
         /// <summary>
-        /// Command format.
+        /// Source command text, used for parsing command parameter values, according to <see cref="CommandFormat"/>.
         /// </summary>
-        string CommandFormat { get; }
+        string CommandText { get; }
+        
+        /// <summary>
+        /// Parsed parameters values. If <see cref="IsSuccess"/> is <see langword="false"/>, contains collection of parameters which were unable to parse.
+        /// </summary>
+        IEnumerable<ICommandParameterValue> Values { get; }
     }
 }

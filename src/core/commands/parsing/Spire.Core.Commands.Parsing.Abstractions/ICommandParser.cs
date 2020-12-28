@@ -1,8 +1,8 @@
-﻿#region
-
+﻿using System;
 using System.Collections.Generic;
-
-#endregion
+using System.Threading.Tasks;
+using Spire.Core.Commands.Parsing.Abstractions.Parameters;
+using Spire.Core.Commands.Parsing.Abstractions.Parameters.Options;
 
 namespace Spire.Core.Commands.Parsing.Abstractions
 {
@@ -12,40 +12,43 @@ namespace Spire.Core.Commands.Parsing.Abstractions
     public interface ICommandParser
     {
         /// <summary>
-        /// Parser command format.
+        /// Command parser configuration.
         /// </summary>
-        string CommandFormat { get; }
-
+        ICommandParserConfiguration Configuration { get; }
+        
         /// <summary>
-        /// Default variable type.
+        /// Collection of command parameter option handlers.
         /// </summary>
-        IVariableType DefaultVariableType { get; }
-
+        IEnumerable<ICommandParameterOptionHandler> OptionHandlers { get; }
+        
         /// <summary>
-        /// Collection of variable types could be used.
+        /// Collection of command parameter types.
         /// </summary>
-        IReadOnlyDictionary<string, IVariableType> VariableTypes { get; }
-
+        IEnumerable<ICommandParameterType> Types { get; }
+        
         /// <summary>
-        /// This is the character that denotes the beginning of a variable name.
+        /// Command parameter pattern.
         /// </summary>
-        string VariableStartChar { get; }
-
+        string ParameterPattern { get; }
+        
         /// <summary>
-        /// This is the character that denotes the end of a variable name.
+        /// Command parameter option pattern.
         /// </summary>
-        string VariableEndChar { get; }
-
+        string ParameterOptionPattern { get; }
+        
         /// <summary>
-        /// A collection of all variable names parsed from the <see cref="CommandFormat"/>.
+        /// Parses <see cref="ICommandFormat"/>.
         /// </summary>
-        IReadOnlyList<IVariable> Variables { get; }
-
+        /// <param name="formatSource">Command format source text.</param>
+        /// <returns>Parsed command format.</returns>
+        ICommandFormat ParseCommandFormat(string formatSource);
+        
         /// <summary>
-        /// Parses command.
+        /// Parses command according to provided <paramref name="commandFormat"></paramref>.
         /// </summary>
-        /// <param name="source">Command parsing source.</param>
+        /// <param name="commandFormat">Command format.</param>
+        /// <param name="source">Command text.</param>
         /// <returns>Command parser result.</returns>
-        ICommandParserResult ParseCommand(string source);
+        ICommandParserResult Parse(ICommandFormat commandFormat, string source);
     }
 }
