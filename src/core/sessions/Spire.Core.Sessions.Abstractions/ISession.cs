@@ -3,6 +3,7 @@
 using System.Threading;
 using System.Threading.Channels;
 using System.Threading.Tasks;
+using Spire.Core.Sessions.Abstractions.Storage;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 
@@ -24,6 +25,11 @@ namespace Spire.Core.Sessions.Abstractions
         /// Session entity type.
         /// </summary>
         UpdateType EntityType { get; }
+
+        /// <summary>
+        /// Session storage.
+        /// </summary>
+        ISessionStorage Storage { get; }
     }
 
     /// <summary>

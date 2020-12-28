@@ -1,6 +1,7 @@
 #region
 
 using System.Collections.Generic;
+using Spire.Core.Sessions.Abstractions.Storage;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 
@@ -13,6 +14,11 @@ namespace Spire.Core.Sessions.Abstractions
     /// </summary>
     public interface ISessionManager
     {
+        /// <summary>
+        /// Session storage manager.
+        /// </summary>
+        ISessionStorageManager StorageManager { get; }
+
         /// <summary>
         /// Enumerates all the sessions, related to the current session manager.
         /// </summary>

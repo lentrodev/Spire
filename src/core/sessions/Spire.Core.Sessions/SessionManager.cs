@@ -5,6 +5,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Channels;
 using Spire.Core.Sessions.Abstractions;
+using Spire.Core.Sessions.Abstractions.Storage;
+using Spire.Core.Sessions.Storage;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 
@@ -17,14 +19,18 @@ namespace Spire.Core.Sessions
     /// </summary>
     public class SessionManager : ISessionManager
     {
+        public ISessionStorageManager StorageManager { get; }
+
         private readonly ConcurrentDictionary<int, IList<ISession>> _sessions;
 
         /// <summary>
         /// Creates new session manager.
         /// </summary>
-        public SessionManager()
+        public SessionManager(SessionStorageMode sessionStorageMode = SessionStorageMode.PerUser)
         {
             _sessions = new ConcurrentDictionary<int, IList<ISession>>();
+
+            StorageManager = new SessionStorageManager(sessionStorageMode);
         }
 
         /// <summary>
@@ -47,11 +53,12 @@ namespace Spire.Core.Sessions
             {
                 foreach (ISession existingSession in existingSessions.ToList())
                 {
-                    if (!(existingSession is ISession<TEntity> typedSession && typedSession.EntityType == session.EntityType))
+                    if (!(existingSession is ISession<TEntity> typedSession &&
+                          typedSession.EntityType == session.EntityType))
                     {
                         existingSessions.Add(session);
                     }
-                    
+
                     break;
                 }
             }
@@ -70,7 +77,8 @@ namespace Spire.Core.Sessions
         /// <returns>Created session</returns>
         public ISession<TEntity> CreateSession<TEntity>(User owner, UpdateType entityType)
         {
-            return new Session<TEntity>(owner, entityType, Channel.CreateUnbounded<TEntity>());
+            return new Session<TEntity>(owner, entityType, Channel.CreateUnbounded<TEntity>(),
+                StorageManager.GetOrCreateStorage<TEntity>(owner, entityType));
         }
 
         /// <summary>
@@ -86,7 +94,7 @@ namespace Spire.Core.Sessions
             {
                 foreach (ISession existingSession in existingSessions)
                 {
-                    if (existingSession is ISession<TEntity> typedSession 
+                    if (existingSession is ISession<TEntity> typedSession
                         && typedSession.EntityType == entityType)
                     {
                         return true;
@@ -114,7 +122,7 @@ namespace Spire.Core.Sessions
             {
                 foreach (ISession existingSession in existingSessions)
                 {
-                    if (existingSession is ISession<TEntity> typedSession 
+                    if (existingSession is ISession<TEntity> typedSession
                         && typedSession.EntityType == entityType)
                     {
                         return typedSession;

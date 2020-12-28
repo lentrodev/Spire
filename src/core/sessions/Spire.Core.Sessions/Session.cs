@@ -5,6 +5,7 @@ using System.Threading;
 using System.Threading.Channels;
 using System.Threading.Tasks;
 using Spire.Core.Sessions.Abstractions;
+using Spire.Core.Sessions.Abstractions.Storage;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 
@@ -29,6 +30,11 @@ namespace Spire.Core.Sessions
         public UpdateType EntityType { get; }
 
         /// <summary>
+        /// Session storage.
+        /// </summary>
+        public ISessionStorage Storage { get; }
+
+        /// <summary>
         /// Indicated update entity request status.
         /// </summary>
         public bool IsUpdateEntityRequested { get; private set; }
@@ -46,12 +52,15 @@ namespace Spire.Core.Sessions
         /// <param name="owner">Session owner.</param>
         /// <param name="entityType">Session entity type.</param>
         /// <param name="updateEntityChannel">Update entity channel.</param>
-        public Session(User owner, UpdateType entityType, Channel<TEntity> updateEntityChannel)
+        /// <param name="storage">Session storage.</param>
+        public Session(User owner, UpdateType entityType, Channel<TEntity> updateEntityChannel,
+            ISessionStorage storage)
         {
             Owner = owner;
             EntityType = entityType;
             UpdateEntityChannelWriter = updateEntityChannel;
             _updateEntityChannelReader = updateEntityChannel;
+            Storage = storage;
         }
 
         /// <summary>
@@ -60,7 +69,15 @@ namespace Spire.Core.Sessions
         /// <param name="sessionRequestOptions">Session entity request options.</param>
         /// <param name="cancellationToken">Cancellation token for task cancellation.</param>
         /// <returns>Requested entity.</returns>
-        public async ValueTask<ISessionUpdateEntityRequestResult<TEntity>> RequestEntityAsync(
+        public ValueTask<ISessionUpdateEntityRequestResult<TEntity>> RequestEntityAsync(
+            ISessionUpdateEntityRequestOptions<TEntity> sessionRequestOptions,
+            CancellationToken cancellationToken = default)
+        {
+            return new ValueTask<ISessionUpdateEntityRequestResult<TEntity>>(Task.Factory.StartNew(() =>
+                RequestEntityAsyncInternal(sessionRequestOptions, cancellationToken), cancellationToken));
+        }
+
+        private ISessionUpdateEntityRequestResult<TEntity> RequestEntityAsyncInternal(
             ISessionUpdateEntityRequestOptions<TEntity> sessionRequestOptions,
             CancellationToken cancellationToken = default)
         {
