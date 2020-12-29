@@ -6,20 +6,20 @@ using CommandLine;
 
 namespace Spire.Hosting.Console
 {
-    public class ConsoleBotHostBuilder : BotHostBuilderBase<ConsoleBotHostBuilder>
+    public class ConsoleBotHost : BotHostBase<ConsoleBotHost, ConsoleBotConfigurationOptions>
     {
-        ConsoleBotHostBuilder(BotConfigurationOptions botConfigurationOptions) : base(botConfigurationOptions)
+        ConsoleBotHost(ConsoleBotConfigurationOptions botConfigurationOptions) : base(botConfigurationOptions)
         {
         }
 
-        public static ConsoleBotHostBuilder CreateDefault(BotConfigurationOptions botConfigurationOptions)
+        public static ConsoleBotHost CreateDefault(ConsoleBotConfigurationOptions botConfigurationOptions)
         {
-            return new ConsoleBotHostBuilder(botConfigurationOptions);
+            return new ConsoleBotHost(botConfigurationOptions);
         }
 
-        public static ConsoleBotHostBuilder CreateDefault(string[] args)
+        public static ConsoleBotHost CreateDefault(string[] args)
         {
-            return ConsoleBotHostBuilder.CreateDefault(Parser.Default
+            return ConsoleBotHost.CreateDefault(Parser.Default
                 .ParseArguments<ConsoleBotConfigurationOptions>(args).Value);
         }
     }

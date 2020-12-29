@@ -15,8 +15,9 @@ using Telegram.Bot.Types.Enums;
 
 namespace Spire.Hosting
 {
-    public abstract class BotHostBuilderBase<TBotHostBuilder> : IUpdateHandler
-        where TBotHostBuilder : BotHostBuilderBase<TBotHostBuilder>
+    public abstract class BotHostBase<TBotHost, TBotConfigurationOptions> : IUpdateHandler
+        where TBotHost : BotHostBase<TBotHost, TBotConfigurationOptions>
+        where TBotConfigurationOptions : BotConfigurationOptions
     {
         /// <summary>
         /// Indicates which UpdateTypes are allowed to be received. null means all updates
@@ -29,6 +30,11 @@ namespace Spire.Hosting
         public IBot Bot { get; private set; }
 
         /// <summary>
+        /// Bot configuration options.
+        /// </summary>
+        public TBotConfigurationOptions ConfigurationOptions { get; }
+
+        /// <summary>
         /// Indicates bot status.
         /// </summary>
         public bool IsRunning { get; private set; }
@@ -36,12 +42,12 @@ namespace Spire.Hosting
         /// <summary>
         /// Triggers, when bot starts.
         /// </summary>
-        public event EventHandler OnBotStarted;
+        public event EventHandler<BotDescriptor> OnBotStarted;
 
         /// <summary>
         /// Triggers, when bot stops.
         /// </summary>
-        public event EventHandler OnBotStopped;
+        public event EventHandler<BotDescriptor> OnBotStopped;
 
         /// <summary>
         /// Triggers, when an update was processed..
@@ -54,11 +60,9 @@ namespace Spire.Hosting
         public event EventHandler<ErrorOccuredEventArgs> OnErrorOccured;
 
 
-        private readonly BotConfigurationOptions _botConfigurationOptions;
-
         private readonly CancellationTokenSource _cancellationTokenSource;
 
-        protected BotHostBuilderBase(BotConfigurationOptions botConfigurationOptions)
+        protected BotHostBase(TBotConfigurationOptions botConfigurationOptions)
         {
             if (botConfigurationOptions == null)
             {
@@ -77,31 +81,34 @@ namespace Spire.Hosting
                 throw new ArgumentException("Bot name token is null or empty.");
             }
 
-            _botConfigurationOptions = botConfigurationOptions;
+            ConfigurationOptions = botConfigurationOptions;
             _cancellationTokenSource = new CancellationTokenSource();
         }
 
-        public TBotHostBuilder WithBot(Func<BotConfigurationOptions, IBot> botBuilder)
+        public TBotHost WithBot(Func<BotConfigurationOptions, IBot> botBuilder)
         {
-            Bot = botBuilder(_botConfigurationOptions);
+            Bot = botBuilder(ConfigurationOptions);
 
             AllowedUpdates = Bot.UpdateEntityProcessors
                 .Select(updateEntityProcessor => updateEntityProcessor.EntityType)
                 .ToArray();
 
-            return (TBotHostBuilder) this;
+            return (TBotHost) this;
         }
 
         public virtual Task HandleUpdate(ITelegramBotClient botClient, Update update,
             CancellationToken cancellationToken)
         {
-            Task.Factory.StartNew(async () =>
+            if (IsRunning)
             {
-                var updateEntityProcessingResult = await Bot.Process(update);
+                Task.Factory.StartNew(async () =>
+                {
+                    var updateEntityProcessingResult = await Bot.Process(update);
 
-                OnUpdateProcessed?.Invoke(this,
-                    new UpdateProcessedEventArgs(updateEntityProcessingResult));
-            }, cancellationToken);
+                    OnUpdateProcessed?.Invoke(this,
+                        new UpdateProcessedEventArgs(updateEntityProcessingResult));
+                }, cancellationToken);
+            }
 
             return Task.CompletedTask;
         }
@@ -119,7 +126,17 @@ namespace Spire.Hosting
             _cancellationTokenSource.Cancel();
             IsRunning = false;
 
-            OnBotStopped?.Invoke(this, EventArgs.Empty);
+            StopReceivingUpdates();
+
+            OnBotStopped?.Invoke(this, Bot.Descriptor);
+        }
+
+        protected virtual void StopReceivingUpdates()
+        {
+        }
+
+        protected virtual void StartReceivingUpdates()
+        {
         }
 
         public virtual void Run()
@@ -136,9 +153,9 @@ namespace Spire.Hosting
 
             IsRunning = true;
 
-            Bot.BotClient.StartReceiving(this, _cancellationTokenSource.Token);
+            StartReceivingUpdates();
 
-            OnBotStarted?.Invoke(this, EventArgs.Empty);
+            OnBotStarted?.Invoke(this, Bot.Descriptor);
         }
     }
 }

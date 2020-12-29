@@ -1,0 +1,10 @@
+﻿{
+  "$schema": "http://json.schemastore.org/launchsettings.json",
+  "profiles": {
+    "Spire.Examples.Web": {
+      "commandName": "Project",
+      "dotnetRunMessages": "true",
+      "applicationUrl": "https://localhost/;http://localhost/"
+    }
+  }
+}
