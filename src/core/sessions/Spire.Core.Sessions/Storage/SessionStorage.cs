@@ -34,114 +34,108 @@ namespace Spire.Core.Sessions.Storage
             return new ReadOnlyDictionary<string, object>(_storageEntries);
         }
 
-        /// <summary>
-        /// Tries to add entry to the storage.
-        /// </summary>
-        /// <param name="key">Entry key.</param>
-        /// <param name="value">Entry value</param>
-        /// <typeparam name="TValue">Entry value type.</typeparam>
-        /// <returns>True, if entry was successfully added.</returns>
         public bool Add<TValue>(string key, TValue value)
         {
-            if (string.IsNullOrEmpty(key))
-            {
-                throw new ArgumentNullException(nameof(key));
-            }
-
-            if (value == null)
-            {
-                throw new ArgumentNullException(nameof(value));
-            }
-
             return _storageEntries.TryAdd(key, value);
         }
 
-        /// <summary>
-        /// Tries to get entry from the storage.
-        /// </summary>
-        /// <param name="key">Entry key.</param>
-        /// <returns><see cref="object"/>, if entry exists. Otherwise, returns <see langword="null"/>.</returns>
         public object Get(string key)
         {
-            if (string.IsNullOrEmpty(key))
+            if (_storageEntries.TryGetValue(key, out object existingValue))
             {
-                throw new ArgumentNullException(nameof(key));
-            }
-
-            if (_storageEntries.TryGetValue(key, out object value))
-            {
-                return value;
-            }
-
-            return null;
-        }
-
-        /// <summary>
-        /// Tries to get entry from the storage and convert it to <typeparamref name="TValue"/>.
-        /// </summary>
-        /// <param name="key">Entry key.</param>
-        /// <typeparam name="TValue">Entry value type.</typeparam>
-        /// <returns>Entry value.</returns>
-        public TValue Get<TValue>(string key)
-        {
-            object value = Get(key);
-
-            if (value != null)
-            {
-                try
-                {
-                    return (TValue) value;
-                }
-                catch
-                {
-                }
-
-                try
-                {
-                    return (TValue) Convert.ChangeType(value, typeof(TValue));
-                }
-                catch
-                {
-                }
+                return existingValue;
             }
 
             return default;
         }
 
-        /// <summary>
-        /// Tries to update entry in the storage.
-        /// </summary>
-        /// <param name="key">Entry key.</param>
-        /// <param name="value">Entry new value.</param>
-        /// <typeparam name="TValue">Entry value type.</typeparam>
-        /// <returns>Updating result.</returns>
-        public bool Update<TValue>(string key, TValue value)
+        public TValue Get<TValue>(string key)
         {
-            if (string.IsNullOrEmpty(key))
+            try
             {
-                throw new ArgumentNullException(nameof(key));
+                return (TValue) Get(key);
             }
-
-            if (_storageEntries.TryGetValue(key, out object existingValue))
+            catch{}
+            
+            try
             {
-                return _storageEntries.TryUpdate(key, value, existingValue);
+                return (TValue) Convert.ChangeType(Get(key), typeof(TValue));
             }
+            catch{}
 
-            return false;
+            return default;
         }
 
-        /// <summary>
-        /// Tries to remove entry from the storage.
-        /// </summary>
-        /// <param name="key">Entry key.</param>
-        /// <returns>Removing result.</returns>
-        public bool Remove(string key)
+        public bool IsExists(string key)
         {
-            if (_storageEntries.TryGetValue(key, out object valueToRemove))
-            {
-                return _storageEntries.TryRemove(key, out object removedValue) && Equals(valueToRemove, removedValue);
-            }
+            return _storageEntries.ContainsKey(key);
+        }
 
+        public bool IsExists(string key, out object existingValue)
+        {
+            return _storageEntries.TryGetValue(key, out existingValue);
+        }
+
+        public bool IsExists<TValue>(string key, out TValue existingValue)
+        {
+            bool existence = IsExists(key, out object existingValueObject);
+
+            try
+            {
+                existingValue = (TValue) existingValueObject;
+                return true;
+            }
+            catch { }
+                
+            try
+            {
+                existingValue = (TValue) Convert.ChangeType(existingValueObject, typeof(TValue));
+                return true;
+            }
+            catch { }
+
+            existingValue = default;
+            return existence;
+        }
+
+        public bool Update(string key, object value, object existingValue)
+        {
+            return _storageEntries.TryUpdate(key, value, existingValue);
+        }
+
+        public bool Update<TValue>(string key, TValue value)
+        {
+            if (_storageEntries.TryGetValue(key, out object existingValue))
+            {
+                return Update(key, value, existingValue);
+            }
+            return false;
+        }
+        public bool Remove(string key, out object removedValue)
+        {
+            return _storageEntries.TryRemove(key, out removedValue);
+        }
+
+        public bool Remove<TValue>(string key, out TValue removedValue)
+        {
+            if (Remove(key, out object removedValueObject))
+            {
+                try
+                {
+                    removedValue = (TValue) removedValueObject;
+                    return true;
+                }
+                catch { }
+                
+                try
+                {
+                    removedValue = (TValue) Convert.ChangeType(removedValueObject, typeof(TValue));
+                    return true;
+                }
+                catch { }
+            }
+            
+            removedValue = default;
             return false;
         }
     }

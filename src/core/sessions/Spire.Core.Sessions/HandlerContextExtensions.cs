@@ -8,6 +8,7 @@ using Spire.Core.Abstractions.Processing.Attributes;
 using Spire.Core.Abstractions.Processing.Contexts;
 using Spire.Core.Processing;
 using Spire.Core.Sessions.Abstractions;
+using Spire.Core.Sessions.Abstractions.Storage;
 
 #endregion
 
@@ -55,9 +56,9 @@ namespace Spire.Core.Sessions
         /// </summary>
         /// <param name="containerBuilder">Container builder.</param>
         /// <returns>Configured <see cref="ContainerBuilder"/> instance.</returns>
-        public static ContainerBuilder AddSessionManagement(this ContainerBuilder containerBuilder)
+        public static ContainerBuilder AddSessionManagement(this ContainerBuilder containerBuilder, SessionStorageMode sessionStorageMode = SessionStorageMode.PerEntityType)
         {
-            ISessionManager sessionManager = new SessionManager();
+            ISessionManager sessionManager = new SessionManager(sessionStorageMode);
 
             containerBuilder.RegisterInstance(sessionManager).As<ISessionManager>()
                 .IfNotRegistered(typeof(ISessionManager));
