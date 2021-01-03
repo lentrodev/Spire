@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using Autofac;
@@ -92,7 +93,7 @@ namespace Spire.Core.Builders.Processing
                     .TryCreateDescriptor<IUpdateEntityHandlerDescriptor<TUpdateEntityHandlerAttribute>,
                         TUpdateEntityHandlerAttribute>(
                         new[] {typeof(bool), typeof(Task<bool>), typeof(ValueTask<bool>)},
-                        attribute => attribute.Id.Equals(ProcessorId) && attribute.EntityType.Equals(EntityType),
+                        attribute => attribute.Id.Equals(ProcessorId) && attribute.EntityType == EntityType,
                         (descriptorMethod, attribute)
                             => new UpdateEntityHandlerDescriptor<TUpdateEntityHandlerAttribute>(Guid.NewGuid(),
                                 descriptorMethod, method.DeclaringType, attribute),
@@ -128,21 +129,17 @@ namespace Spire.Core.Builders.Processing
         public IUpdateEntityProcessor<TEntity, TUpdateEntityHandlerAttribute> Build()
         {
             IEnumerable<IActivatedUpdateEntityHandlerDescriptor<TUpdateEntityHandlerAttribute>>
-                activatedEntityHandlerDescriptors = _handlerDescriptors
-                    .ActivateDescriptors<IUpdateEntityHandlerDescriptor<TUpdateEntityHandlerAttribute>,
-                        IActivatedUpdateEntityHandlerDescriptor<TUpdateEntityHandlerAttribute>,
-                        TUpdateEntityHandlerAttribute>
-                    (Container, (descriptor, typeInstance) =>
-                        new ActivatedUpdateEntityHandlerDescriptor<TUpdateEntityHandlerAttribute>(descriptor.Id,
-                            descriptor.Method,
-                            typeInstance,
-                            descriptor.DeclaringType,
-                            descriptor.Attribute
-                        ));
+                activatedEntityHandlerDescriptors = _handlerDescriptors.ActivateDescriptors<IUpdateEntityHandlerDescriptor<TUpdateEntityHandlerAttribute>, IActivatedUpdateEntityHandlerDescriptor<TUpdateEntityHandlerAttribute>, TUpdateEntityHandlerAttribute>(Container, (descriptor, typeInstance) =>
+                    new ActivatedUpdateEntityHandlerDescriptor<TUpdateEntityHandlerAttribute>(descriptor.Id,
+                        descriptor.Method,
+                        typeInstance,
+                        descriptor.DeclaringType,
+                        descriptor.Attribute
+                    ));
 
             IEnumerable<IActivatedUpdateEntityHandlerDescriptor<TUpdateEntityHandlerAttribute>>
                 activatedAndOrchestratedEntityHandlerDescriptors =
-                    _entityHandlerOrchestrator.Orchestrate(activatedEntityHandlerDescriptors);
+                    _entityHandlerOrchestrator.Orchestrate(activatedEntityHandlerDescriptors).ToList();
 
             return new UpdateEntityProcessor<TEntity, TUpdateEntityHandlerAttribute>(ProcessorId, EntityType,
                 activatedAndOrchestratedEntityHandlerDescriptors);
