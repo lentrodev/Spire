@@ -38,7 +38,7 @@ class Build : NukeBuild
     [Parameter("Configuration to build - Default is 'Debug' (local) or 'Release' (server)")]
     readonly Configuration Configuration = IsLocalBuild ? Configuration.Debug : Configuration.Release;
 
-    const string Version = "0.13.3";
+    const string Version = "0.13.4";
 
     [Solution] readonly Solution Solution;
     [GitRepository] readonly GitRepository GitRepository;
@@ -111,6 +111,10 @@ class Build : NukeBuild
                             .SetPackageLicenseUrl(licenceUrl)
                             .SetRepositoryType("git")
                             .SetRepositoryUrl(repositoryUrl)
+                            
+                            .SetSymbolPackageFormat(DotNetSymbolPackageFormat.snupkg)
+                            .EnableIncludeSymbols()
+                            
                             .SetVersion(Version)
                         )
                 );
