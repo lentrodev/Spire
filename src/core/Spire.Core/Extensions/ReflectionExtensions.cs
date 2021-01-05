@@ -1,6 +1,7 @@
 ﻿#region
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
@@ -93,7 +94,9 @@ namespace Spire.Core.Extensions
             throw new Exception("Target method should have awaitable return type.");
         }
 
-        public static bool TryActivateType(this Type type, IContainer serviceContainer, out object activatedInstance)
+        public static bool TryActivateType(this Type type, IContainer serviceContainer,
+            out object activatedInstance,
+            params object[] availableArguments)
         {
             if (type == null)
             {
@@ -105,7 +108,8 @@ namespace Spire.Core.Extensions
 
             foreach (ConstructorInfo constructor in allConstructors)
             {
-                object[] parametersValues = constructor.GetParameters().RetrieveParametersValues(serviceContainer);
+                object[] parametersValues = constructor.GetParameters()
+                    .RetrieveParametersValues(serviceContainer, availableArguments);
 
                 try
                 {
@@ -142,21 +146,22 @@ namespace Spire.Core.Extensions
                     resolvingParameters.Add(new TypedParameter(attribute.GetType(), attribute));
                 }
 
-                object argumentValue =
-                    serviceContainer.ResolveOptional(parameterInfo.ParameterType, resolvingParameters);
+                object argumentValue = null;
+
+                foreach (object arg in availableArguments)
+                {
+                    Type argType = arg.GetType();
+
+                    if (argType.GetInterface(parameterType.Name) != null ||
+                        parameterType.GetInterface(argType.Name) != null)
+                    {
+                        argumentValue = arg;
+                    }
+                }
 
                 if (argumentValue == null)
                 {
-                    foreach (object arg in availableArguments)
-                    {
-                        Type argType = arg.GetType();
-
-                        if (argType.GetInterface(parameterType.Name) != null ||
-                            parameterType.GetInterface(argType.Name) != null)
-                        {
-                            argumentValue = arg;
-                        }
-                    }
+                    argumentValue = serviceContainer.ResolveOptional(parameterInfo.ParameterType, resolvingParameters);
                 }
 
                 arguments[i] = argumentValue;

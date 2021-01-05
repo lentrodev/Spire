@@ -59,12 +59,12 @@ namespace Spire.Core.Commands.Parsing
         public ICommandParserBuilder WithOverridenDefaults(
             Action<ICommandParserConfiguration> defaultsOverriderConfigurator)
         {
-            _commandParserConfiguration ??= CommandParserConfiguration.Default;
-
             if (defaultsOverriderConfigurator == null)
             {
                 throw new ArgumentNullException(nameof(defaultsOverriderConfigurator));
             }
+
+            _commandParserConfiguration ??= CommandParserConfiguration.Default;
 
             defaultsOverriderConfigurator(_commandParserConfiguration);
 

@@ -16,13 +16,15 @@ using Telegram.Bot.Types.Enums;
 namespace Spire.Core.Commands.Processing
 {
     /// <summary>
-    /// Default implementation of <see cref="ICommandProcessor{TEntity,TCommandHandlerAttribute}"/>
+    /// Default implementation of <see cref="ICommandProcessor{TEntity,TCommandHandlerAttribute,TCommandHandlerMatcher}"/>
     /// </summary>
-    /// <typeparam name="TEntity"></typeparam>
-    /// <typeparam name="TCommandHandlerAttribute"></typeparam>
-    public class CommandProcessor<TEntity, TCommandHandlerAttribute> : Identifiable<string>,
-        ICommandProcessor<TEntity, TCommandHandlerAttribute>
+    /// <typeparam name="TEntity">Entity type.</typeparam>
+    /// <typeparam name="TCommandHandlerAttribute">Command handler attribute.</typeparam>
+    /// <typeparam name="TCommandHandlerMatcher">Command handler matcher type.</typeparam>
+    public class CommandProcessor<TEntity, TCommandHandlerAttribute, TCommandHandlerMatcher> : Identifiable<string>,
+        ICommandProcessor<TEntity, TCommandHandlerAttribute, TCommandHandlerMatcher>
         where TCommandHandlerAttribute : CommandHandlerAttributeBase
+    where TCommandHandlerMatcher : class, ICommandHandlerMatcher<TEntity, TCommandHandlerAttribute>
     {
         /// <summary>
         /// Entity type.
@@ -32,7 +34,7 @@ namespace Spire.Core.Commands.Processing
         /// <summary>
         /// Provides command matching.
         /// </summary>
-        public ICommandHandlerMatcher<TEntity, TCommandHandlerAttribute> Matcher { get; }
+        public TCommandHandlerMatcher Matcher { get; }
 
         /// <summary>
         /// Collection of activated command descriptors.
@@ -40,14 +42,14 @@ namespace Spire.Core.Commands.Processing
         public IEnumerable<IActivatedCommandHandlerDescriptor<TCommandHandlerAttribute>> Descriptors { get; }
 
         /// <summary>
-        /// Creates new <see cref="CommandProcessor{TEntity,TCommandHandlerAttribute}"/> with specified id, entity type, command handler matcher and command descriptors.
+        /// Creates new <see cref="CommandProcessor{TEntity,TCommandHandlerAttribute,TCommandHandlerMatcher}"/> with specified id, entity type, command handler matcher and command descriptors.
         /// </summary>
         /// <param name="id">Command processor id.</param>
         /// <param name="entityType">Entity type.</param>
         /// <param name="matcher">Command handler matcher.</param>
         /// <param name="descriptors">Collection of command handler descriptors.</param>
         public CommandProcessor(string id, UpdateType entityType,
-            ICommandHandlerMatcher<TEntity, TCommandHandlerAttribute> matcher,
+            TCommandHandlerMatcher matcher,
             IEnumerable<IActivatedCommandHandlerDescriptor<TCommandHandlerAttribute>> descriptors) : base(id)
         {
             EntityType = entityType;

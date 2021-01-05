@@ -11,7 +11,7 @@ namespace Spire.Core.Commands.Abstractions.Processing.Attributes
     /// <summary>
     /// Base command handler attribute.
     /// </summary>
-    [AttributeUsage(AttributeTargets.Method)]
+    [AttributeUsage(AttributeTargets.Method, AllowMultiple = true)]
     public abstract class CommandHandlerAttributeBase : Attribute, IIdentifiable<string>
     {
         /// <summary>

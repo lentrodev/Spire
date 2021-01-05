@@ -55,8 +55,9 @@ namespace Spire.Core.Sessions
         /// Adds session management to the <see cref="ContainerBuilder"/>.
         /// </summary>
         /// <param name="containerBuilder">Container builder.</param>
+        /// <param name="sessionStorageMode">Session storage mode.</param>
         /// <returns>Configured <see cref="ContainerBuilder"/> instance.</returns>
-        public static ContainerBuilder AddSessionManagement(this ContainerBuilder containerBuilder, SessionStorageMode sessionStorageMode = SessionStorageMode.PerEntityType)
+        public static ContainerBuilder RegisterSessionManager(this ContainerBuilder containerBuilder, SessionStorageMode sessionStorageMode = SessionStorageMode.PerEntityType)
         {
             ISessionManager sessionManager = new SessionManager(sessionStorageMode);
 

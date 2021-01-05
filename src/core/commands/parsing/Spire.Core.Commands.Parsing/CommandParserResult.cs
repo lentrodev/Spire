@@ -1,5 +1,6 @@
 ﻿#region
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Spire.Core.Commands.Parsing.Abstractions;
@@ -42,9 +43,14 @@ namespace Spire.Core.Commands.Parsing
             IEnumerable<ICommandParameterValue> values)
         {
             IsSuccess = isSuccess;
-            CommandFormat = commandFormat;
-            CommandText = commandText;
-            Values = values;
+            CommandFormat = commandFormat ?? throw new ArgumentNullException(nameof(commandFormat));
+
+            if (string.IsNullOrEmpty(commandText) || string.IsNullOrWhiteSpace(commandText))
+            {
+                throw new ArgumentNullException(nameof(commandText));
+            }
+            
+            Values = values ?? throw new ArgumentNullException(nameof(values));
         }
 
         /// <summary>

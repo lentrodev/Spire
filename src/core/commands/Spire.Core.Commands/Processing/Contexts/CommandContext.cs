@@ -18,7 +18,7 @@ namespace Spire.Core.Commands.Processing.Contexts
     /// <summary>
     /// Default implementation of <see cref="ICommandContext{TEntity}"/>.
     /// </summary>
-    /// <typeparam name="TEntity"></typeparam>
+    /// <typeparam name="TEntity">Entity type.</typeparam>
     public class CommandContext<TEntity> : HandlerContext<TEntity>, ICommandContext<TEntity>
     {
         private readonly IEnumerable<ICommandParameterValue> _commandParameterValues;
@@ -38,7 +38,7 @@ namespace Spire.Core.Commands.Processing.Contexts
             : this(commandParameterValues, handlerContext.Update, handlerContext.Entity, handlerContext.Sender,
                 handlerContext.BotClient, handlerContext.Container)
         {
-            _commandParameterValues = commandParameterValues;
+            
         }
 
         /// <summary>

@@ -31,7 +31,7 @@ namespace Spire.Examples.Shared
 
             ContainerBuilder containerBuilder = new ContainerBuilder();
 
-            containerBuilder.AddSessionManagement();
+            containerBuilder.RegisterSessionManager();
             containerBuilder.RegisterInstance(new Random());
             containerBuilder.RegisterInstance(new FeedbackService()).As<IFeedbackService>();
 
@@ -75,15 +75,14 @@ namespace Spire.Examples.Shared
                 .WithUpdateEntityHandlersFromType(typeof(SimpleHandlersSource));
 
             updateEntityProcessorBuilder
-                .WithCommandHandler(new MessageCommandHandlerMatcher(),
-                    new MessageUpdateEntityHandlerAttribute(
+                .WithCommandHandler<Message, PositionedEntityHandlerAttribute, MessageCommandHandlerAttribute, MessageCommandHandlerMatcher>(new MessageUpdateEntityHandlerAttribute(
                         5,
                         DefaultProcessorId),
                     ConfigureMessageCommandProcessorBuilder);
         }
 
         private static void ConfigureMessageCommandProcessorBuilder(
-            ICommandProcessorBuilder<Message, MessageCommandHandlerAttribute> messageCommandProcessorBuilder)
+            ICommandProcessorBuilder<Message, MessageCommandHandlerAttribute, MessageCommandHandlerMatcher> messageCommandProcessorBuilder)
         {
             messageCommandProcessorBuilder
                 .WithCommandHandlersFromType(typeof(SimpleCommandsSource))

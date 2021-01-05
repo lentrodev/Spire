@@ -13,7 +13,7 @@ namespace Spire.Core.Commands.Processing
     /// <summary>
     /// Default implementation of <see cref="ICommandHandlerDescriptor{TCommandHandlerAttribute}"/>.
     /// </summary>
-    /// <typeparam name="TCommandHandlerAttribute"></typeparam>
+    /// <typeparam name="TCommandHandlerAttribute">Command handler attribute.</typeparam>
     public class CommandHandlerDescriptor<TCommandHandlerAttribute> : Descriptor<TCommandHandlerAttribute>,
         ICommandHandlerDescriptor<TCommandHandlerAttribute>
         where TCommandHandlerAttribute : CommandHandlerAttributeBase

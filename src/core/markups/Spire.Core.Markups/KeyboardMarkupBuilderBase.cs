@@ -1,6 +1,7 @@
 ﻿#region
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
@@ -136,7 +137,12 @@ namespace Spire.Core.Markups
                     $"You can't add a new column to the keyboard markup. Columns count can't exceed {_keyboardMarkupSizeLimit.Columns}.");
             }
 
-            return BuildMarkup(_keyboardMarkupButtons, keyboardMarkupBuildOptions);
+            IEnumerable<TKeyboardMarkupButton>[] keyboard 
+                = new IEnumerable<TKeyboardMarkupButton>[_keyboardMarkupButtons.Count];
+
+            _keyboardMarkupButtons.CopyTo(keyboard, 0);
+            
+            return BuildMarkup(keyboard, keyboardMarkupBuildOptions);
         }
     }
 }

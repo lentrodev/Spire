@@ -118,6 +118,11 @@ namespace Spire.Core.Commands.Parsing
         /// <returns>Parsed command format.</returns>
         public ICommandFormat ParseCommandFormat(string formatSource)
         {
+            if (string.IsNullOrEmpty(formatSource) || string.IsNullOrWhiteSpace(formatSource))
+            {
+                throw new ArgumentNullException(nameof(formatSource));
+            }
+
             Regex parameterRegex = new Regex(ParameterPattern);
 
             ICollection<ICommandParameter> commandParameters = new Collection<ICommandParameter>();
@@ -185,6 +190,16 @@ namespace Spire.Core.Commands.Parsing
         /// <returns>Command parser result.</returns>
         public ICommandParserResult Parse(ICommandFormat commandFormat, string source)
         {
+            if (commandFormat == null)
+            {
+                throw new ArgumentNullException(nameof(commandFormat));
+            }
+
+            if (string.IsNullOrEmpty(source) || string.IsNullOrWhiteSpace(source))   
+            {
+                throw new ArgumentNullException(nameof(source));
+            }
+
             string commandPattern = GetCommandPattern(commandFormat);
 
             Regex commandRegex = new Regex(commandPattern);

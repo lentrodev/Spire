@@ -10,7 +10,7 @@ namespace Spire.Core.Commands.Processing
     /// <summary>
     /// Default implementation of <see cref="ICommandHandlerMatchingResult{TEntity}"/>
     /// </summary>
-    /// <typeparam name="TEntity"></typeparam>
+    /// <typeparam name="TEntity">Entity type.</typeparam>
     public class CommandHandlerMatchingResult<TEntity> : ICommandHandlerMatchingResult<TEntity>
     {
         /// <summary>

@@ -28,7 +28,7 @@ namespace Spire.Core.Commands.Abstractions.Processing
         ValueTask<ICommandHandlerMatchingResult<TEntity>> CanHandle(IHandlerContext<TEntity> handlerContext,
             ICommandHandlerDescriptor<TCommandHandlerAttribute> commandHandlerDescriptor, IContainer serviceContainer);
     }
-
+ 
     /// <summary>
     /// Base interface for implementing command handler matching result.
     /// </summary>

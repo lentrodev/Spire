@@ -33,7 +33,6 @@ namespace Spire.Core.Commands.Parsing
         {
             Format = format ?? throw new ArgumentNullException(nameof(format));
             Parameters = parameters ?? throw new ArgumentNullException(nameof(parameters));
-            ;
         }
     }
 }

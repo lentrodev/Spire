@@ -15,17 +15,19 @@ namespace Spire.Core.Commands.Abstractions.Builders.Processing
     /// </summary>
     /// <typeparam name="TEntity">Entity type.</typeparam>
     /// <typeparam name="TCommandHandlerAttribute">Command handler attribute.</typeparam>
+    /// <typeparam name="TCommandHandlerMatcher">Command handler matcher type.</typeparam>
     public interface
-        ICommandProcessorBuilder<TEntity, TCommandHandlerAttribute> : IBuilder<
-            ICommandProcessor<TEntity, TCommandHandlerAttribute>>
+        ICommandProcessorBuilder<TEntity, TCommandHandlerAttribute,TCommandHandlerMatcher> : IBuilder<
+            ICommandProcessor<TEntity, TCommandHandlerAttribute, TCommandHandlerMatcher>>
         where TCommandHandlerAttribute : CommandHandlerAttributeBase
+        where TCommandHandlerMatcher : class, ICommandHandlerMatcher<TEntity, TCommandHandlerAttribute>
     {
         /// <summary>
         /// Adds new command handler descriptor.
         /// </summary>
         /// <param name="commandHandlerDescriptor">Command handler descriptor</param>
         /// <returns>Configured command processor builder instance.</returns>
-        ICommandProcessorBuilder<TEntity, TCommandHandlerAttribute> WithCommandDescriptor(
+        ICommandProcessorBuilder<TEntity, TCommandHandlerAttribute, TCommandHandlerMatcher> WithCommandDescriptor(
             ICommandHandlerDescriptor<TCommandHandlerAttribute> commandHandlerDescriptor);
 
         /// <summary>
@@ -33,14 +35,14 @@ namespace Spire.Core.Commands.Abstractions.Builders.Processing
         /// </summary>
         /// <param name="type">Type.</param>
         /// <returns>Configured command processor builder instance.</returns>
-        ICommandProcessorBuilder<TEntity, TCommandHandlerAttribute> WithCommandHandlersFromType(Type type);
+        ICommandProcessorBuilder<TEntity, TCommandHandlerAttribute, TCommandHandlerMatcher> WithCommandHandlersFromType(Type type);
 
         /// <summary>
         /// Adds command handlers from specified assembly.
         /// </summary>
         /// <param name="assembly">Assembly.</param>
         /// <returns>Configured command processor builder instance.</returns>
-        ICommandProcessorBuilder<TEntity, TCommandHandlerAttribute> WithCommandHandlersFromAssembly(
+        ICommandProcessorBuilder<TEntity, TCommandHandlerAttribute, TCommandHandlerMatcher> WithCommandHandlersFromAssembly(
             Assembly assembly = null);
     }
 }

@@ -10,7 +10,7 @@ namespace Spire.Core.Abstractions.Processing.Attributes
     /// <summary>
     /// Base interface for implementing update entity handler attribute.
     /// </summary>
-    [AttributeUsage(AttributeTargets.Method)]
+    [AttributeUsage(AttributeTargets.Method, AllowMultiple = true)]
     public abstract class UpdateEntityHandlerAttributeBase : Attribute, IIdentifiable<string>
     {
         /// <summary>

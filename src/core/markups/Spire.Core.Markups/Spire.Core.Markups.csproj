@@ -5,12 +5,14 @@
     </PropertyGroup>
 
     <ItemGroup>
+      <ProjectReference Include="..\..\Spire.Core.Abstractions\Spire.Core.Abstractions.csproj" />
       <ProjectReference Include="..\Spire.Core.Markups.Abstractions\Spire.Core.Markups.Abstractions.csproj" />
     </ItemGroup>
 
     <ItemGroup>
+      <PackageReference Include="Autofac" Version="6.0.0" />
       <PackageReference Include="Telegram.Bot" Version="15.7.1" />
-        <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0" PrivateAssets="All"/>
+        <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0" PrivateAssets="All" />
     </ItemGroup>
 
 </Project>

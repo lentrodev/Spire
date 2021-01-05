@@ -1,5 +1,6 @@
 #region
 
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Autofac;
 using Spire.Core.Abstractions.Processing.Contexts;
@@ -21,7 +22,8 @@ namespace Spire.Examples.Shared
     {
         private readonly ICommandParser _commandParser;
 
-        public MessageCommandHandlerMatcher()
+        public MessageCommandHandlerMatcher(
+            IEnumerable<IActivatedCommandHandlerDescriptor<MessageCommandHandlerAttribute>> descriptors)
         {
             ICommandParserBuilder commandParserBuilder = CommandParserBuilder.New;
 

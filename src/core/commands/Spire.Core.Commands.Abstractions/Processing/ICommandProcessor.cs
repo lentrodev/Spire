@@ -26,8 +26,9 @@ namespace Spire.Core.Commands.Abstractions.Processing
     /// <summary>
     /// Base interface for implementation command processor.
     /// </summary>
-    public interface ICommandProcessor<TEntity, TCommandHandlerAttribute> : ICommandProcessor
+    public interface ICommandProcessor<TEntity, TCommandHandlerAttribute, TCommandHandlerMatcher> : ICommandProcessor
         where TCommandHandlerAttribute : CommandHandlerAttributeBase
+    where TCommandHandlerMatcher : class, ICommandHandlerMatcher<TEntity, TCommandHandlerAttribute>
     {
         /// <summary>
         /// Collection of activated command descriptors.
@@ -37,7 +38,7 @@ namespace Spire.Core.Commands.Abstractions.Processing
         /// <summary>
         /// Provides command matching.
         /// </summary>
-        ICommandHandlerMatcher<TEntity, TCommandHandlerAttribute> Matcher { get; }
+        TCommandHandlerMatcher Matcher { get; }
 
         /// <summary>
         /// Trying to process command.
