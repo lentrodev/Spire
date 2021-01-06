@@ -60,7 +60,7 @@ namespace Spire.Core.Commands.Processing.Contexts
         private ICommandParameterValue GetParameterValue(string parameterName)
         {
             return _commandParameterValues.FirstOrDefault(parameterValue =>
-                string.Compare(parameterValue.Value, parameterName, StringComparison.Ordinal) == 0);
+                string.Compare(parameterValue.Parameter.Name, parameterName, StringComparison.Ordinal) == 0);
         }
 
         /// <summary>
